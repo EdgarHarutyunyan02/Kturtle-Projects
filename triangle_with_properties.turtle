@@ -1,0 +1,891 @@
+kturtle-script-v1.0
+#    Program for drawing a triangle with all of it's properties.
+#    Copyright (C) 2021  Edgar Harutyunyan (edgar.harutyunyan.02@gmail.com)
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to the Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+@(clear)
+@(reset)
+@(canvassize) 650@(,)800
+@(spriteshow)
+@(fontsize) 20
+@(penwidth) 3
+@(learn) getLength $x1@(,)$y1@(,)$x2@(,)$y2 {
+  @(return) @(sqrt) ($x1-$x2)*($x1-$x2)+($y1-$y2)*($y1-$y2)
+}
+
+@(learn) getDegree $a1@(,)$b1@(,)$a2@(,)$b2@(,)$a3@(,)$b3{
+##varadarznum e 2 vektorneri kazmac ankyun@ 
+  $vx1 = $a2-$a1
+  $vy1 = $b2-$b1
+  $vx2 = $a3-$a1
+  $vy2 = $b3-$b1
+  $ankyun = @(arccos)(($vx1*$vx2+$vy1*$vy2)/@(sqrt)(($vx1^2+$vy1^2)*($vx2^2+$vy2^2)))
+  @(return) $ankyun
+}
+
+@(learn) kramer_x $kx_a1@(,)$kx_b1@(,)$kx_c1@(,)$kx_a2@(,)$kx_b2@(,)$kx_c2 {
+  @(return) ($kx_b2*$kx_c1-$kx_b1*$kx_c2)/($kx_a1*$kx_b2-$kx_a2*$kx_b1)
+}
+
+@(learn) kramer_y $ky_a1@(,)$ky_b1@(,)$ky_c1@(,)$ky_a2@(,)$ky_b2@(,)$ky_c2 {
+  @(return) ($ky_a1*$ky_c2-$ky_a2*$ky_c1)/($ky_a1*$ky_b2-$ky_a2*$ky_b1)
+}
+
+@(learn) eq_of_line_k $eq_x1@(,)$eq_y1@(,)$eq_x2@(,)$eq_y2 {
+# veradarznum e ayd 2 keterov ancnox uxxi havasarman K gorcakci ankyunayin chap@
+  @(if) ($eq_x1!=$eq_x2) {
+    $eq_degree = @(arctan)(kramer_x $eq_x1@(,)1@(,)$eq_y1@(,)$eq_x2@(,)1@(,)$eq_y2)
+  }@(else) {
+    @(if)($eq_y1<$eq_y2){
+      $eq_degree = 90
+    }@(else){
+      $eq_degree = -90
+    }
+  }
+  @(return) $eq_degree
+}
+
+@(learn) eq_of_line_b $eq_x1@(,)$eq_y1@(,)$eq_x2@(,)$eq_y2 {
+  # veradarznum e ayd 2 keterov ancnox uxxi havasarman B gorcakic@
+  @(if) ($eq_x1!=$eq_x2) {
+    $b_gorcakic = kramer_y $eq_x1@(,)1@(,)$eq_y1@(,)$eq_x2@(,)1@(,)$eq_y2
+    @(return) $b_gorcakic
+  }@(else){
+    @(return) "infinite"
+  }
+}
+@(learn) KUTUHK_ankyun $_K_x1@(,) $_K_y1@(,) $_K_x2@(,) $_K_y2@(,) $_K_x3@(,) $_K_y3 {
+#ketic uxxin tarvats uxxahayatsi Ankyun@
+  $check = eq_of_line_k $_K_x2@(,) $_K_y2@(,) $_K_x3@(,) $_K_y3
+  @(if) ($check!=0 ) {
+    @(if) $check!=90 {
+      @(return) @(arctan)((-1)/(@(tan)($check)))
+    }
+  }
+  @(if) $check==0 {
+    @(return) 90
+  }
+  @(if) $check==90 {
+    @(return) 0
+  }
+}
+
+@(learn) KUTUHK_b $_b_x1@(,)$_b_y1@(,)$_b_x2@(,)$_b_y2@(,)$_b_x3@(,)$_b_y3 {
+#ketic uxxin tarvats uxxahayatsi & myus uxxi hatman koordinatner@
+  $ch_K = KUTUHK_ankyun $_b_x1@(,)$_b_y1@(,)$_b_x2@(,)$_b_y2@(,)$_b_x3@(,)$_b_y3
+  @(if) $ch_K !=90 {
+    @(return) $_b_y1-(@(tan)($ch_K ))*$_b_x1
+  }@(else){
+    @(return) "infinite"
+  }
+}
+
+@(learn) height_across_coords_x $_ac_x1@(,)$_ac_y1@(,)$_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3 {
+  #veradarznum e uxxahayatsi ev uxxi het hatman koordinatneri x-@
+  $ac_a1 = (-1)*(@(tan)(eq_of_line_k $_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3))
+  $ac_b1 = 1
+  $ac_c1 = eq_of_line_b $_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3
+  $ac_a2 = (-1)*@(tan)(KUTUHK_ankyun $_ac_x1@(,)$_ac_y1@(,)$_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3)
+  $ac_b2 = 1
+  $ac_c2 = KUTUHK_b $_ac_x1@(,)$_ac_y1@(,)$_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3
+
+  $check_ac = eq_of_line_k $_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3
+  @(if) ($check_ac!=0){
+    @(if) ($check_ac!=90 @(and) $check_ac!=-90){
+      @(return) kramer_x $ac_a1@(,)$ac_b1@(,)$ac_c1@(,)$ac_a2@(,)$ac_b2@(,)$ac_c2
+    }
+  }
+  @(if)($check_ac == 0){
+    @(return) $_ac_x1
+  }
+  @(if)($check_ac == 90 @(or) $check_ac == -90) {
+    @(return) $_ac_x2
+  }
+}
+
+@(learn) height_across_coords_y $_ac_x1@(,)$_ac_y1@(,)$_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3 {
+#veradarznum e uxxahayatsi ev uxxi het hatman koordinatneri y-@
+  $ac_y_a1 = (-1)*(@(tan)(eq_of_line_k $_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3))
+  $ac_y_b1 = 1
+  $ac_y_c1 = eq_of_line_b $_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3
+  $ac_y_a2 = (-1)*@(tan)(KUTUHK_ankyun $_ac_x1@(,)$_ac_y1@(,)$_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3)
+  $ac_y_b2 = 1
+  $ac_y_c2 = KUTUHK_b $_ac_x1@(,)$_ac_y1@(,)$_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3
+
+  $check_y_ac = eq_of_line_k $_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3
+    @(if) ($check_y_ac!=0){
+      @(if) ($check_y_ac!=90 @(and) $check_y_ac!=-90){
+        @(return) kramer_y $ac_y_a1@(,)$ac_y_b1@(,)$ac_y_c1@(,)$ac_y_a2@(,)$ac_y_b2@(,)$ac_y_c2
+      }
+  }
+  @(if)($check_y_ac == 0){
+    @(return) $_ac_y2
+  }
+  @(if)($check_y_ac == 90 @(or) $check_y_ac == -90){
+    @(return) $_ac_y1
+  }
+}
+
+@(learn) drawLine $_dr_x1@(,)$_dr_y1@(,)$_dr_x2@(,)$_dr_y2@(,)$_lineType{
+# gcum e hatvats 
+  @(pendown)
+  @(go) $_dr_x1@(,)$_dr_y1
+  $length = getLength $_dr_x1@(,)$_dr_y1@(,)$_dr_x2@(,)$_dr_y2
+  $degree = eq_of_line_k $_dr_x1@(,)$_dr_y1@(,)$_dr_x2@(,)$_dr_y2
+  @(if) ($_dr_x1>$_dr_x2){
+    @(direction)  $degree-90
+  }@(else){
+    @(direction)  $degree+90
+  }
+  @(if) $_lineType == "solid" {
+    @(pendown)
+    @(fw) $length
+  }@(else) @(if) $_lineType=="dashed"{
+      @(repeat) @(round)($length/10) {
+        @(pendown)
+        @(fw) 5
+        @(penup)
+        @(fw) 5
+      }
+    }@(else) @(if) $_lineType=="transparent"{
+       @(penup)
+        @(fw) $length
+    }
+}
+
+
+@(learn) triangle $tr_x1@(,)$tr_y1@(,)$tr_x2@(,)$tr_y2@(,)$tr_x3@(,)$tr_y3 {
+  ## draw triangle
+  @(pencolor) 33@(,)33@(,)33
+  drawLine $tr_x1@(,)$tr_y1@(,)$tr_x2@(,)$tr_y2@(,)"solid"
+  drawLine $tr_x2@(,)$tr_y2@(,)$tr_x3@(,)$tr_y3@(,)"solid"
+  drawLine $tr_x3@(,)$tr_y3@(,)$tr_x1@(,)$tr_y1@(,)"solid"
+}
+
+@(learn) median $med_x1@(,)$med_y1@(,)$med_x2@(,)$med_y2@(,)$med_x3@(,)$med_y3@(,)$med_return{
+  # gcum e mijnagic
+  @(if) ($med_return==""){
+      drawLine $med_x1@(,)$med_y1@(,)(($med_x2+$med_x3)/2)@(,)(($med_y2+$med_y3)/2)@(,)"solid"
+      @(return) getLength $med_x1@(,)$med_y1@(,)(($med_x2+$med_x3)/2)@(,)(($med_y2+$med_y3)/2)
+  }@(else){
+    @(if)($med_return=="getx"){
+      @(return) ($med_x2+$med_x3)/2
+    }
+    @(if)($med_return=="gety"){
+      @(return) ($med_y2+$med_y3)/2
+    }
+  }
+}
+
+@(learn) height_of_triangle $ht_x1@(,)$ht_y1@(,)$ht_x2@(,)$ht_y2@(,)$ht_x3@(,)$ht_y3@(,)$ht_text@(,)$ht_return {
+  ##Gcum e bardzruthun@ 
+  $_to_x = height_across_coords_x $ht_x1@(,)$ht_y1@(,)$ht_x2@(,)$ht_y2@(,)$ht_x3@(,)$ht_y3
+  $_to_y = height_across_coords_y $ht_x1@(,)$ht_y1@(,)$ht_x2@(,)$ht_y2@(,)$ht_x3@(,)$ht_y3
+  @(if) ($ht_return==""){
+      drawLine $ht_x1@(,)$ht_y1@(,) $_to_x@(,) $_to_y@(,)"solid"
+      @(direction) 0
+      @(print) $ht_text
+      @(if) (getDegree $ht_x2@(,)$ht_y2@(,)$ht_x1@(,)$ht_y1@(,)$ht_x3@(,)$ht_y3) > 90 {
+        drawLine $_to_x@(,) $_to_y@(,) $ht_x2@(,)$ht_y2@(,)"dashed"
+      }
+      @(if) (getDegree $ht_x3@(,)$ht_y3@(,)$ht_x1@(,)$ht_y1@(,)$ht_x2@(,)$ht_y2) > 90 {
+        drawLine $_to_x@(,) $_to_y@(,) $ht_x3@(,)$ht_y3@(,)"dashed"
+      }
+      @(return) getLength $ht_x1@(,)$ht_y1@(,) $_to_x@(,) $_to_y
+  }@(else){
+    @(if)($ht_return=="getx"){
+      @(return) $_to_x
+    }
+    @(if)($ht_return=="gety"){
+      @(return) $_to_y
+    }
+  }
+}
+
+@(learn) bisector $bst_x1@(,)$bst_y1@(,)$bst_x2@(,)$bst_y2@(,)$bst_x3@(,)$bst_y3@(,)$bs_return {
+  # gcum e kisord@ 
+   $ks_to_x = kisordi_hatman_ket_x $bst_x1@(,) $bst_y1@(,) $bst_x2@(,) $bst_y2@(,) $bst_x3@(,) $bst_y3
+   $ks_to_y = kisordi_hatman_ket_y $bst_x1@(,) $bst_y1@(,) $bst_x2@(,) $bst_y2@(,) $bst_x3@(,) $bst_y3
+  @(if)($bs_return==""){
+     drawLine $bst_x1@(,) $bst_y1@(,)$ks_to_x@(,)$ks_to_y@(,)"solid"
+     @(return) getLength $bst_x1@(,)$bst_y1@(,)$ks_to_x@(,)$ks_to_y
+  }@(else){
+    @(if)($bs_return=="getx"){
+      @(return) $ks_to_x
+    }
+    @(if)($bs_return=="gety"){
+      @(return) $ks_to_y
+    }
+  }
+}
+
+@(learn)  vectorDegree $v_x1@(,)$v_y1@(,)$v_x2@(,)$v_y2{
+  #veradarznum e vektori kazmac ankyun@
+  @(if)($v_x1!=$v_x2){
+    @(if)($v_x1<=$v_x2){
+      @(if) $v_y1<=$v_y2 {
+        @(return) @(arctan)(($v_y2-$v_y1)/($v_x2-$v_x1))
+      }@(else){
+        @(return) (@(arctan)(($v_y2-$v_y1)/($v_x2-$v_x1)))+360
+      }
+    }@(else){
+      @(return) (@(arctan)(($v_y2-$v_y1)/($v_x2-$v_x1)))+180
+    }
+  }@(else){
+    @(if)($v_y1>$v_y2){
+      @(return) -90
+    }@(else){
+      @(return) 90
+    }
+  }
+}
+
+@(learn) kisordi_ankyun $ks_x1@(,)$ks_y1@(,)$ks_x2@(,)$ks_y2@(,)$ks_x3@(,)$ks_y3 {
+  # veradarznum e kisordi ankyun@
+  $vect_degree_1 = vectorDegree $ks_x1@(,)$ks_y1@(,)$ks_x2@(,)$ks_y2 
+  $vect_degree_2 = vectorDegree $ks_x1@(,)$ks_y1@(,)$ks_x3@(,)$ks_y3
+  @(return) (($vect_degree_1 + $vect_degree_2)/2)
+}
+
+@(learn) kisordi_hatman_ket_x $ksg_x1@(,)$ksg_y1@(,)$ksg_x2@(,)$ksg_y2@(,)$ksg_x3@(,)$ksg_y3 {
+  $ankyun = kisordi_ankyun $ksg_x1@(,)$ksg_y1@(,)$ksg_x2@(,)$ksg_y2@(,)$ksg_x3@(,)$ksg_y3   
+  @(if) $ankyun >90 {
+    $ankyun = $ankyun-180
+  }
+  @(if) $ankyun >90 {
+    $ankyun = $ankyun-180
+  }
+  $dimaci_koxmi_ankyun = eq_of_line_k $ksg_x2@(,)$ksg_y2@(,)$ksg_x3@(,)$ksg_y3
+  $b_gorc = $ksg_y1-((@(tan)($ankyun))*$ksg_x1)
+  @(if) $dimaci_koxmi_ankyun!=-90 @(and) ($dimaci_koxmi_ankyun!=90 @(and) $dimaci_koxmi_ankyun!=0){
+    $k_of_front_side = (@(tan)($dimaci_koxmi_ankyun)) #kisordi handipakac koxmov ancnox uxxi K gorcakic
+    $b_of_front_side = (eq_of_line_b $ksg_x2@(,)$ksg_y2@(,)$ksg_x3@(,)$ksg_y3 )#kisordi handipakac koxmov ancnox uxxi B gorcakic
+    $a1_of_kramer = (-1)*$k_of_front_side
+    $a2_of_kramer =(-1)*(@(tan)($ankyun))
+    @(return) kramer_x $a1_of_kramer@(,)1@(,)$b_of_front_side@(,)$a2_of_kramer@(,)1@(,)$b_gorc
+  }@(else){
+    @(if) $dimaci_koxmi_ankyun == 0 {
+
+      $kisordi_hatman_ket_y = $ksg_y2
+      $kisordi_hatman_ket_x = ($kisordi_hatman_ket_y-$b_gorc)/(@(tan)($ankyun))
+    }
+    @(if) $dimaci_koxmi_ankyun == 90 @(or) $dimaci_koxmi_ankyun == -90  {
+      $kisordi_hatman_ket_x = $ksg_x2
+      $kisordi_hatman_ket_y = ((@(tan)($ankyun))*$kisordi_hatman_ket_x)+$b_gorc
+    }
+    @(return) $kisordi_hatman_ket_x
+  }
+}
+
+@(learn) kisordi_hatman_ket_y $ksg_x1@(,)$ksg_y1@(,)$ksg_x2@(,)$ksg_y2@(,)$ksg_x3@(,)$ksg_y3 {
+  $ankyun = kisordi_ankyun $ksg_x1@(,)$ksg_y1@(,)$ksg_x2@(,)$ksg_y2@(,)$ksg_x3@(,)$ksg_y3   
+  @(if) $ankyun >90 {
+    $ankyun = $ankyun-180
+  }
+  @(if) $ankyun >90 {
+    $ankyun = $ankyun-180
+  }
+  $dimaci_koxmi_ankyun = eq_of_line_k $ksg_x2@(,)$ksg_y2@(,)$ksg_x3@(,)$ksg_y3
+  $b_gorc = $ksg_y1-((@(tan)($ankyun))*$ksg_x1)
+  @(if) $dimaci_koxmi_ankyun!=-90 @(and) ($dimaci_koxmi_ankyun!=90 @(and) $dimaci_koxmi_ankyun!=0){
+    $k_of_front_side = (@(tan)($dimaci_koxmi_ankyun)) #kisordi handipakac koxmov ancnox uxxi K gorcakic
+    $b_of_front_side = (eq_of_line_b $ksg_x2@(,)$ksg_y2@(,)$ksg_x3@(,)$ksg_y3 )#kisordi handipakac koxmov ancnox uxxi B gorcakic
+    $a1_of_kramer = (-1)*$k_of_front_side
+    $a2_of_kramer =(-1)*(@(tan)($ankyun))
+    @(return) kramer_y $a1_of_kramer@(,)1@(,)$b_of_front_side@(,)$a2_of_kramer@(,)1@(,)$b_gorc
+  }@(else){
+    @(if) $dimaci_koxmi_ankyun == 0 {
+
+      $kisordi_hatman_ket_y = $ksg_y2
+      $kisordi_hatman_ket_x = ($kisordi_hatman_ket_y-$b_gorc)/(@(tan)($ankyun))
+    }
+    @(if) $dimaci_koxmi_ankyun == 90 @(or) $dimaci_koxmi_ankyun == -90  {
+      $kisordi_hatman_ket_x = $ksg_x2
+      $kisordi_hatman_ket_y = ((@(tan)($ankyun))*$kisordi_hatman_ket_x)+$b_gorc
+    }
+    @(return) $kisordi_hatman_ket_y
+  }
+
+}
+
+
+
+@(learn) crossed_lines_x $_crl_k1@(,)$_crl_b1@(,)$_crl_k2@(,)$_crl_b2 {
+##vardadarznum e 2 uxixneri hatman keti x koordinat@
+  @(return) kramer_x (-1)*$_crl_k1@(,)1@(,)$_crl_b1@(,)(-1)*$_crl_k2@(,)1@(,)$_crl_b2
+}
+
+@(learn) crossed_lines_y $_crl_k1@(,)$_crl_b1@(,)$_crl_k2@(,)$_crl_b2 {
+##vardadarznum e 2 uxixneri hatman keti y koordinat@
+  @(return) kramer_y (-1)*$_crl_k1@(,)1@(,)$_crl_b1@(,)(-1)*$_crl_k2@(,)1@(,)$_crl_b2
+}
+
+
+@(learn) crossed_lines2_x $_crl_x1@(,)$_crl_y1@(,)$_crl_x2@(,)$_crl_y2@(,)$_crl_x3@(,)$_crl_y3@(,)$_crl_x4@(,)$_crl_y4 {
+##vardadarznum e 2 uxixneri hatman keti x koordinat@
+    $first_line_k = @(tan)(eq_of_line_k $_crl_x1@(,)$_crl_y1@(,)$_crl_x2@(,)$_crl_y2)
+    $first_line_b = (eq_of_line_b $_crl_x1@(,)$_crl_y1@(,)$_crl_x2@(,)$_crl_y2)
+    $second_line_k = @(tan)(eq_of_line_k $_crl_x3@(,)$_crl_y3@(,)$_crl_x4@(,)$_crl_y4)
+    $second_line_b = (eq_of_line_b $_crl_x3@(,)$_crl_y3@(,)$_crl_x4@(,)$_crl_y4)
+    
+    @(if) ($_crl_x1 == $_crl_x2) @(or) ($_crl_x3 == $_crl_x4) {
+      @(if) ($_crl_x1 == $_crl_x2) { @(return) $_crl_x1 }
+      @(else) @(if) ($_crl_x3 == $_crl_x4){ @(return) $_crl_x3}
+    }@(else) @(if) ($_crl_y1 == $_crl_y2) @(or) ($_crl_y3 == $_crl_y4) {
+      @(if) ($_crl_y1 == $_crl_y2) {@(return) ($_crl_y1-$second_line_b)/$second_line_k }
+      @(else) @(if) ($_crl_y3 == $_crl_y4) {@(return) ($_crl_y3-$first_line_b)/$first_line_k}
+    }
+  @(if) ($_crl_x1 != $_crl_x2) @(and) ($_crl_x3 != $_crl_x4) @(and) $_crl_y1 != $_crl_y2 @(and) $_crl_y3 != $_crl_y4{
+      @(return) kramer_x (-1)*$first_line_k@(,)1@(,)$first_line_b@(,)(-1)*$second_line_k@(,)1@(,)$second_line_b
+  }
+}
+
+@(learn) crossed_lines2_y $_crly_x1@(,)$_crly_y1@(,)$_crly_x2@(,)$_crly_y2@(,)$_crly_x3@(,)$_crly_y3@(,)$_crly_x4@(,)$_crly_y4 {
+##vardadarznum e 2 uxixneri hatman keti y koordinat@
+     $y_first_line_k = @(tan)(eq_of_line_k $_crly_x1@(,)$_crly_y1@(,)$_crly_x2@(,)$_crly_y2)
+     $y_first_line_b = (eq_of_line_b $_crly_x1@(,)$_crly_y1@(,)$_crly_x2@(,)$_crly_y2)
+     $y_second_line_k = @(tan)(eq_of_line_k $_crly_x3@(,)$_crly_y3@(,)$_crly_x4@(,)$_crly_y4)
+      $y_second_line_b = (eq_of_line_b $_crly_x3@(,)$_crly_y3@(,)$_crly_x4@(,)$_crly_y4)
+     
+
+      @(if) ($_crly_x1 == $_crly_x2) @(or) ($_crly_x3 == $_crly_x4) {
+        @(if) ($_crly_x1 == $_crly_x2){ @(return) ($y_second_line_k*$_crly_x1)+$y_second_line_b}
+       @(else) @(if) ($_crly_x3 == $_crly_x4){   @(return) ($y_first_line_k*$_crly_x3)+$y_first_line_b}
+    }@(else) @(if) ($_crly_y1 == $_crly_y2) @(or) ($_crly_y3 == $_crly_y4) {
+         @(if) ($_crly_y1 == $_crly_y2){   @(return) $_crly_y1}
+         @(else) @(if) ($_crly_y3 == $_crly_y4){ @(return) $_crly_y3}
+    }
+  @(if) ($_crly_x1 != $_crly_x2) @(and) ($_crly_x3 != $_crly_x4) @(and) $_crly_y1 != $_crly_y2 @(and) $_crly_y3 != $_crly_y4{
+  @(return) kramer_y (-1)*$y_first_line_k@(,)1@(,)$y_first_line_b@(,)(-1)*$y_second_line_k@(,)1@(,)$y_second_line_b
+}
+}
+
+#gcum e koordinatakan hamakarg@
+  @(penwidth) 1.2
+  @(pencolor) 80@(,)80@(,)80
+  @(fontsize) 14
+  @(go) 0@(,)400
+  @(dir) 0
+  @(print) 0
+  @(direction) 90 
+  @(repeat) 4{
+    @(direction) 90 
+    @(forward) 98
+    @(penwidth) 2
+    @(forward) 2
+    @(penwidth) 1.2
+    @(direction) 0 
+    @(print) @(getx)
+  }
+
+  @(go) 0@(,)400
+  @(direction) 0 
+  @(repeat) 4{
+    @(forward) 98
+    @(penwidth) 2
+    @(forward) 2
+    @(penwidth) 1.2
+    @(gox) (@(getx)-40)
+    @(print) 400-@(gety)
+    @(gox) (@(getx)+40)
+  }
+
+@(spritehide)
+$type_of_import = ""
+@(while) ($type_of_import!=1 @(and) $type_of_import!=2 @(and) $type_of_import!=3 @(and) $type_of_import!=4) @(or)  $type_of_import=="" {
+  $type_of_import = @(ask) "Ի՞նչ տվյալներ եք ցանկանում ներմուծել՝ 1__ կոորդինատները, 2__ 3 կողմերի երկարությունները, 3__ 2 կողմը և  դրանցով կազմված անկյունը, 4__ կողմը և նրան առընթեր 2 անկյունները"
+}
+$is_repeated = -1
+@(if) $type_of_import==2 {
+  $side_a = -1
+  $side_b = -1
+  $side_c = -1
+  $is_triangle = @(false)
+  @(message) "Յուրաքանչյուր կողմի երկարություն ներմուծեք (0;300) միջակայքում այնպես, որ յուրաքանչյուր 2 կողմերի գումարը մեծ լինի 3-րդ կողմից։"
+  @(while) ($side_a<=0 @(or) $side_a>=300) @(or) ($side_b<=0 @(or) $side_b>=300) @(or) ($side_c<=0 @(or) $side_c>=300) @(or) $is_triangle==@(false){
+    @(if) $is_repeated>-1 {
+       @(message) "Նշված պայմաններին չհամապատասխանող թիվ։"     
+     }
+    $side_a = @(ask) "Առաջին կողմի երկարությունը"
+    $side_b = @(ask) "Երկրորդ կողմի երկարությունը"
+    $side_c = @(ask) "Երրորդ կողմի երկարությունը"
+    @(if) (($side_a+$side_b)>$side_c) @(and) (($side_a+$side_c)>$side_b) @(and) (($side_b+$side_c)>$side_a) {
+      $is_triangle = @(true)
+    }
+    $is_repeated = $is_repeated+1
+  }
+  $g_x1 = 50
+  $g_y1 = 350
+  $g_x2 = 50+$side_b
+  $g_y2 = 350
+  $alpha = @(arccos)(($side_a^2+$side_b^2-$side_c^2)/(2*$side_a*$side_b))
+  $g_x3 = ($side_a*@(cos)($alpha))+$g_x1
+  $g_y3 = $g_y1-($side_a*@(sin)($alpha))
+}@(else) @(if) $type_of_import==3{
+  $side_a = -1
+  $side_b = -1
+  $corner = 0
+  @(message) "Յուրաքանչյուր կողմի երկարություն ներմուծեք (0;300) միջակայքում, իսկ անկյունը` (0;180) միջակայքում։"
+  @(while) ($side_a<=0 @(or) $side_a>=300) @(or) ($side_b<=0 @(or) $side_b>=300) @(or) ($corner<=0 @(or) $corner>=180) {
+    @(if) $is_repeated>-1 {
+       @(message) "Նշված պայմաններին չհամապատասխանող թիվ։"     
+     }
+    $side_a = @(ask) "Առաջին կողմի երկարությունը"
+    $side_b = @(ask) "Երկրորդ կողմի երկարությունը"
+    $corner = @(ask) "Այդ կողմերով կազմված անկյունը"
+    $is_repeated = $is_repeated+1
+  }
+  $g_x1 = 50
+  $g_y1 = 350
+  $g_x2 = 50+$side_b
+  $g_y2 = 350
+  $g_x3 = ($side_a*@(cos)($corner))+$g_x1
+  $g_y3 = $g_y1-($side_a*@(sin)($corner))
+}@(else) @(if) $type_of_import==4{
+  $side_c = -1
+  $corner_a = 0
+  $corner_b = 0
+  $is_triangle=@(false) 
+    @(message) "Կողմի երկարություն ներմուծեք (0;300) միջակայքում,իսկ անկյունները` (0;180) միջակայքում  այնպես, որ 2 անկյունների գումարը փոքր լինի 180-ից։"
+  @(while) ($side_c<=0 @(or) $side_c>=300) @(or) ($corner_a<=0 @(or) $corner_a>=180) @(or) ($corner_b<=0 @(or) $corner_b>=180)@(or) $is_triangle==@(false) {
+    @(if) $is_repeated>-1 {
+       @(message) "Նշված պայմաններին չհամապատասխանող թիվ։"     
+     }
+    $side_c = @(ask) "Կողմի երկարությունը"
+    $corner_a = @(ask) "Երկրորդ անկյունը"
+    $corner_b = @(ask) "Երրորդ անկյունը"
+   @(if) ($corner_a+$corner_b)<180 {
+     $is_triangle = @(true)
+   }
+    $is_repeated = $is_repeated+1
+  }
+  $g_x1 = 50
+  $g_y1 = 50
+  $g_x2 = 50+$side_c
+  $g_y2 = 50
+  @(if)($corner_a!=90  @(and) $corner_b!=90){
+    $corner_a_k = @(tan) $corner_a
+    $corner_b_k = @(tan)(180-$corner_b)
+    $corner_a_B_gorc = $g_y1-$corner_a_k*$g_x1
+    $corner_b_B_gorc = $g_y2-$corner_b_k*$g_x2
+    $g_x3 = crossed_lines_x $corner_a_k@(,)$corner_a_B_gorc@(,)$corner_b_k@(,)$corner_b_B_gorc
+    $g_y3 = crossed_lines_y $corner_a_k@(,)$corner_a_B_gorc@(,)$corner_b_k@(,)$corner_b_B_gorc
+    
+  }@(else){
+    @(if)($corner_a==90){
+      $corner_b_k = @(tan) $corner_b
+      $corner_b_B_gorc = $g_y2-$corner_b_k*$g_x2
+      $g_x3 = $g_x1
+      $g_y3 = $corner_b_k*$g_x3+$corner_b_B_gorc
+    }
+    @(if)($corner_b==90){
+      $corner_a_k = @(tan) $corner_a
+      $corner_a_B_gorc = $g_y1-$corner_a_k*$g_x1
+      $g_x3 = $g_x2
+      $g_y3 = $corner_a_k*$g_x3+$corner_a_B_gorc
+    }
+  }
+   $g_y1 = 400-$g_y1
+  $g_y2 = 400-$g_y2
+  $g_y3 = 400-$g_y3
+}@(else)
+  @(if) $type_of_import == 1 {
+
+@(message) "Ներմուծեք եռանկյան գագաթի կոորդինատները [0;400] տիրույթում և կգծվի համապատասխան եռանկյունը:"
+$error = 1
+@(while) $error > 0 {
+  @(if) $error>1 {
+      @(message) "Մուտքագրված են սխալ տիրույթի թվեր"
+  }
+
+
+  $error = 0
+  $g_x1 = @(ask) "x1"
+  $g_y1 = 400-@(ask) "y1"
+  @(if) $g_x1 >400 @(or) $g_y1>400 @(or) $g_x1 <0 @(or) $g_y1<0{
+      $error=$error+2
+  }
+  $g_x2 = @(ask) "x2"
+  $g_y2 = 400-@(ask) "y2"
+  @(if) $g_x2 >400 @(or) $g_y2>400 @(or) $g_x2 <0 @(or) $g_y2<0{
+      $error=$error+2
+  }
+  $g_x3 = @(ask) "x3"
+  $g_y3 = 400-@(ask) "y3"
+  @(if) $g_x3 >400 @(or) $g_y3>400 @(or) $g_x3 <0 @(or) $g_y3<0{
+      $error=$error+2
+  }
+ }
+}
+# Stugum enq erankyun linel@
+$wrong = @(false)
+@(if) (($g_x1==$g_x2 @(and) $g_y1==$g_y2) @(or) ($g_x1==$g_x3 @(and) $g_y1==$g_y3) @(or) ($g_x3==$g_x2 @(and) $g_y3==$g_y2)) {
+  $wrong = @(true)
+}@(else) @(if)($g_y1==$g_y2 @(and) $g_y1==$g_y3){
+  $wrong = @(true)
+}@(else) @(if)(($g_y1==$g_y2 @(and) $g_y1!=$g_y3)@(or)($g_y1==$g_y3 @(and) $g_y1!=$g_y2) @(or) ($g_y2==$g_y3 @(and) $g_y2!=$g_y1)){
+  $wrong = @(false)
+} @(else) @(if)(($g_x1-$g_x2)/($g_y1-$g_y2)==($g_x1-$g_x3)/($g_y1-$g_y3)){
+  $wrong = @(true)
+}
+
+@(if)($wrong==@(true)){
+  @(message) "Եռանկյուն չի ստացվում․"
+}@(else){
+  @(spriteshow)
+  @(penwidth) 1.6
+# Amen inch chicht e
+  ## Global variables for triangle
+  #lengths
+    $length_AB = getLength $g_x1@(,) $g_y1@(,) $g_x2@(,) $g_y2
+    $length_BC = getLength $g_x2@(,) $g_y2@(,) $g_x3@(,) $g_y3
+    $length_AC = getLength $g_x1@(,) $g_y1@(,) $g_x3@(,) $g_y3
+  ##
+  
+  #degrees of peaks / gagatneri astichanner@
+    $peak_A = getDegree $g_x1@(,) $g_y1@(,) $g_x2@(,) $g_y2@(,) $g_x3@(,) $g_y3
+    $peak_B = getDegree $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,) $g_x3@(,) $g_y3
+    $peak_C = getDegree $g_x3@(,) $g_y3@(,) $g_x1@(,) $g_y1@(,) $g_x2@(,) $g_y2
+  ##
+
+  ##Paragic / Perimeter & Kisaparagic
+  $_P = $length_AB+$length_BC+$length_AC
+  $_semi_P = $_P/2
+  ## Makeres/Area with Heron's formula
+  $_area = @(sqrt)($_semi_P*($_semi_P-$length_AB)*($_semi_P-$length_BC)*($_semi_P-$length_AC))
+
+  
+  #erankyan gcum
+  triangle $g_x1@(,) $g_y1@(,) $g_x2@(,) $g_y2@(,) $g_x3@(,) $g_y3
+  $answer = -1
+  
+  $is_repeated = -1
+  @(while)($answer!=0 @(and) $answer!=1 @(and) $answer!=2 @(and) $answer!=3 @(and) $answer!=4 @(and) $answer!=5 @(and) $answer!=6){
+     @(if) $is_repeated>-1 {
+       @(message) "Սխալ տիրույթի թիվ․"     
+     }
+    $is_repeated = $is_repeated+1
+      $answer = @(ask) "Ի՞նչ եք ցանկանում գծել՝ 0__ ոչինչ, 1__ միջնագծեր, 2__ բարձրություններ, 3__ կիսորդներ, 4__ ներգծյալ շրջանագիծ, 5__ արտագծյալ շրջանագիծ, 6__ բոլորը"
+  }
+  # mijnagceri gcum
+  @(if)($answer == 1 @(or) $answer == 6) {
+     @(pencolor) 255@(,)87@(,)34
+     @(penwidth) 1.8
+      @(fontsize) 12
+     $length_AMa = median $g_x1@(,) $g_y1@(,) $g_x2@(,) $g_y2@(,) $g_x3@(,) $g_y3@(,)""
+    $mijnagic_Ma_x = median $g_x1@(,) $g_y1@(,) $g_x2@(,) $g_y2@(,) $g_x3@(,) $g_y3@(,)"getx"
+    $mijnagic_Ma_y = 400-(median $g_x1@(,) $g_y1@(,) $g_x2@(,) $g_y2@(,) $g_x3@(,) $g_y3@(,)"gety")
+      @(direction) 0
+      @(print) "Ma"
+
+     $length_BMb = median $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,) $g_x3@(,) $g_y3@(,)""
+    $mijnagic_Mb_x = median $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,) $g_x3@(,) $g_y3@(,)"getx"
+    $mijnagic_Mb_y = 400-(median $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,) $g_x3@(,) $g_y3@(,)"gety")
+      @(direction) 0
+      @(print) "Mb"
+
+     $length_CMc = median $g_x3@(,) $g_y3@(,) $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,)""
+    $mijnagic_Mc_x = median $g_x3@(,) $g_y3@(,) $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,)"getx"
+    $mijnagic_Mc_y = 400-(median $g_x3@(,) $g_y3@(,) $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,)"gety")
+      @(direction) 0
+      @(print) "Mc"
+
+    @(go) 25@(,)450
+    @(direction) 0
+     @(fontsize) 18
+    @(print) "__ - Միջնագիծ   "+"AMa="+ $length_AMa+", "+"BMb="+ $length_BMb+", "+"CMc="+ $length_CMc
+
+    @(go) 25@(,)675
+    @(pencolor) 255@(,)87@(,)34
+    @(print) "Ma("+$mijnagic_Ma_x+";"+$mijnagic_Ma_y+"); "+"Mb("+$mijnagic_Mb_x+";"+$mijnagic_Mb_y+"); "+"Mc("+$mijnagic_Mc_x+";"+$mijnagic_Mc_y+")"
+
+  }
+
+  # bardzrutyunneri gcum
+  @(if)($answer == 2 @(or) $answer == 6){
+      @(pencolor) 0@(,)150@(,)136
+      @(penwidth) 1.6
+      $height_AHa = height_of_triangle $g_x1@(,) $g_y1@(,) $g_x2@(,) $g_y2@(,) $g_x3@(,) $g_y3@(,)"Ha"@(,)""
+     $barzrutyun_Ha_x = height_of_triangle $g_x1@(,) $g_y1@(,) $g_x2@(,) $g_y2@(,) $g_x3@(,) $g_y3@(,)"Ha"@(,)"getx"
+     $barzrutyun_Ha_y = 400-(height_of_triangle $g_x1@(,) $g_y1@(,) $g_x2@(,) $g_y2@(,) $g_x3@(,) $g_y3@(,)"Ha"@(,)"gety")
+
+      $height_BHb =  height_of_triangle $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,) $g_x3@(,) $g_y3@(,)"Hb"@(,)""
+     $barzrutyun_Hb_x = height_of_triangle $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,) $g_x3@(,) $g_y3@(,)"Hb"@(,)"getx"
+     $barzrutyun_Hb_y = 400-(height_of_triangle $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,) $g_x3@(,) $g_y3@(,)"Hb"@(,)"gety")
+
+      $height_CHc = height_of_triangle $g_x3@(,) $g_y3@(,) $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,)"Hc"@(,)""
+     $barzrutyun_Hc_x = height_of_triangle $g_x3@(,) $g_y3@(,) $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,)"Hc"@(,)"getx"
+     $barzrutyun_Hc_y = 400-(height_of_triangle $g_x3@(,) $g_y3@(,) $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,)"Hc"@(,)"gety")
+
+    @(fontsize) 18
+    @(go) 25@(,)480
+    @(direction) 0
+    @(print) "__ - Բարձրություն   "+"AHa="+ $height_AHa+", "+"BHb="+ $height_BHb+", "+"CHc="+ $height_CHc
+
+    
+    @(go) 25@(,)700
+    @(pencolor) 0@(,)150@(,)136
+    @(print) "Ha("+$barzrutyun_Ha_x+";"+$barzrutyun_Ha_y+"); "+"Hb("+$barzrutyun_Hb_x+";"+$barzrutyun_Hb_y+"); "+"Hc("+$barzrutyun_Hc_x+";"+$barzrutyun_Hc_y+")"
+
+  }
+
+  @(if)($answer == 3 @(or) $answer == 6) {
+     @(pencolor) 156@(,) 39@(,) 176
+      @(penwidth) 1.3
+    # gcum e kisordner@
+    $kisord_AKa = bisector $g_x1@(,) $g_y1@(,) $g_x2@(,) $g_y2@(,) $g_x3@(,) $g_y3@(,)""
+   $kisord_Ka_x = bisector $g_x1@(,) $g_y1@(,) $g_x2@(,) $g_y2@(,) $g_x3@(,) $g_y3@(,)"getx"
+   $kisord_Ka_y = 400-(bisector $g_x1@(,) $g_y1@(,) $g_x2@(,) $g_y2@(,) $g_x3@(,) $g_y3@(,)"gety")
+    @(direction) 0
+    @(print) "Ka"
+
+    $kisord_BKb = bisector $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,) $g_x3@(,) $g_y3@(,)""
+   $kisord_Kb_x = bisector $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,) $g_x3@(,) $g_y3@(,)"getx"
+   $kisord_Kb_y = 400-(bisector $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,) $g_x3@(,) $g_y3@(,)"gety")
+    @(direction) 0
+      @(print) "Kb"
+
+    $kisord_CKc = bisector $g_x3@(,) $g_y3@(,) $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,)""
+   $kisord_Kc_x = bisector $g_x3@(,) $g_y3@(,) $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,)"getx"
+   $kisord_Kc_y = 400-(bisector $g_x3@(,) $g_y3@(,) $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,)"gety")
+    @(direction) 0
+      @(print) "Kc"
+
+     @(go) 25@(,)510
+    @(fontsize) 18
+     @(direction) 0
+    @(print) "__ - Կիսորդ   "+"AKa="+ $kisord_AKa+", "+"BKb="+ $kisord_BKb+", "+"CKc="+ $kisord_CKc
+
+    
+    @(go) 25@(,)725
+    @(pencolor) 156@(,) 39@(,) 176
+    @(print) "Ka("+$kisord_Ka_x+";"+$kisord_Ka_y+"); "+"Kb("+$kisord_Ka_x+";"+$kisord_Ka_y+"); "+"Kc("+$kisord_Ka_x+";"+$kisord_Ka_y+")"
+
+      
+  }
+
+  @(if)($answer == 4 @(or) $answer == 6) {
+     @(pencolor) 33@(,)150@(,)243
+    #nergcyal / kisord
+    $first_bisector_acrossing_x = kisordi_hatman_ket_x $g_x1@(,) $g_y1@(,) $g_x2@(,) $g_y2@(,) $g_x3@(,) $g_y3
+    $first_bisector_acrossing_y = kisordi_hatman_ket_y $g_x1@(,) $g_y1@(,) $g_x2@(,) $g_y2@(,) $g_x3@(,) $g_y3
+    $second_bisector_acrossing_x = kisordi_hatman_ket_x $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,) $g_x3@(,) $g_y3
+    $second_bisector_acrossing_y = kisordi_hatman_ket_y $g_x2@(,) $g_y2@(,) $g_x1@(,) $g_y1@(,) $g_x3@(,) $g_y3
+
+
+    $kisordneri_hatman_x  = crossed_lines2_x $g_x1@(,)$g_y1@(,)$first_bisector_acrossing_x@(,)$first_bisector_acrossing_y@(,)$g_x2@(,)$g_y2@(,)$second_bisector_acrossing_x@(,)$second_bisector_acrossing_y
+    $kisordneri_hatman_y  = crossed_lines2_y $g_x1@(,)$g_y1@(,)$first_bisector_acrossing_x@(,)$first_bisector_acrossing_y@(,)$g_x2@(,)$g_y2@(,)$second_bisector_acrossing_x@(,)$second_bisector_acrossing_y
+
+    $_shoshapox_x = height_across_coords_x $kisordneri_hatman_x@(,)$kisordneri_hatman_y@(,)$g_x1@(,)$g_y1@(,)$g_x2@(,)$g_y2
+    $_shoshapox_y = height_across_coords_y $kisordneri_hatman_x@(,)$kisordneri_hatman_y@(,)$g_x1@(,)$g_y1@(,)$g_x2@(,)$g_y2
+
+    drawLine $kisordneri_hatman_x@(,)$kisordneri_hatman_y@(,)$_shoshapox_x@(,)$_shoshapox_y@(,)"transparent"
+    @(turnleft) 90
+    $_small_r = (2*$_area)/$_P
+    @(pendown)
+    @(penwidth) 1.5
+    @(repeat) 360 {
+      @(forward) $_small_r*3.14/180
+      @(turnleft) 1
+    } 
+    @(fontsize) 16
+    @(go) 25@(,)550
+    @(pencolor) 211@(,)47@(,)47
+    @(direction) 0
+    @(print) "Ներգծյալ շրջանագծի կենտրոնի կոորդինատներ ("+$kisordneri_hatman_x+";"+(400-$kisordneri_hatman_y)+")"
+
+    #########
+    ## nergcyali r
+    @(pencolor) 211@(,)47@(,)47
+    @(go) 25@(,)610
+    @(fontsize) 16
+    @(print) "r= "+$_small_r
+
+  }
+
+  @(if)($answer == 5 @(or) $answer == 6) {
+     @(pencolor) 76@(,)175@(,)80
+      #artagcyal / mijuxxahayats
+    $degree_of_first_middle_height = eq_of_line_k $g_x1@(,)$g_y1@(,) $g_x2@(,)$g_y2
+    $degree_of_second_middle_height = eq_of_line_k $g_x2@(,)$g_y2@(,) $g_x3@(,)$g_y3
+
+    @(if) $degree_of_first_middle_height !=90 @(and) $degree_of_first_middle_height !=-90 @(and) $degree_of_second_middle_height!=90 @(and) $degree_of_second_middle_height !=-90 @(and) $degree_of_first_middle_height!=0 @(and) $degree_of_second_middle_height!=0 { 
+      $_k_of_first_middle_height = (-1)/(@(tan)(eq_of_line_k $g_x1@(,)$g_y1@(,) $g_x2@(,)$g_y2))
+      $_b_of_first_middle_height = (($g_y1+$g_y2)/2)-($_k_of_first_middle_height*($g_x1+$g_x2)/2)
+      $_k_of_second_middle_height = (-1)/(@(tan)(eq_of_line_k $g_x2@(,)$g_y2@(,) $g_x3@(,)$g_y3))
+      $_b_of_second_middle_height = (($g_y2+$g_y3)/2)-($_k_of_second_middle_height*($g_x2+$g_x3)/2)
+
+      $mimyanc_hatman_x = crossed_lines_x $_k_of_first_middle_height@(,)$_b_of_first_middle_height@(,)$_k_of_second_middle_height@(,)$_b_of_second_middle_height
+
+      $mimyanc_hatman_y = crossed_lines_y $_k_of_first_middle_height@(,)$_b_of_first_middle_height@(,)$_k_of_second_middle_height@(,)$_b_of_second_middle_height
+    }@(else) {
+      @(if) $degree_of_first_middle_height == 90 @(or) $degree_of_first_middle_height ==-90 {
+        @(if) $degree_of_second_middle_height!= 0 @(and) $degree_of_second_middle_height!= 90 {
+          $_k_of_second_middle_height = (-1)/(@(tan)($degree_of_second_middle_height))
+          $_b_of_second_middle_height = (($g_y2+$g_y3)/2)-($_k_of_second_middle_height*($g_x2+$g_x3)/2)
+          $mimyanc_hatman_y = ($g_y1+$g_y2)/2
+          $mimyanc_hatman_x = ($mimyanc_hatman_y-$_b_of_second_middle_height)/$_k_of_second_middle_height
+        }@(else){
+          $mimyanc_hatman_y = ($g_y1+$g_y2)/2
+          $mimyanc_hatman_x = ($g_x1+$g_x2)/2
+        }
+      }
+  @(if) $degree_of_second_middle_height ==90 @(or) $degree_of_second_middle_height ==-90 {
+    @(if) $degree_of_first_middle_height!= 0 @(and) $degree_of_first_middle_height!= 90 {
+      $_k_of_first_middle_height = (-1)/(@(tan)($degree_of_first_middle_height))
+      $_b_of_first_middle_height = (($g_y1+$g_y2)/2)-($_k_of_first_middle_height*($g_x1+$g_x2)/2)
+          $mimyanc_hatman_y = ($g_y2+$g_y3)/2
+            $mimyanc_hatman_x = ($mimyanc_hatman_y-$_b_of_first_middle_height)/$_k_of_first_middle_height
+        }@(else){
+         $mimyanc_hatman_y = ($g_y2+$g_y3)/2
+          $mimyanc_hatman_x = ($g_x2+$g_x3)/2
+        }
+      }
+      @(if) $degree_of_first_middle_height ==0 @(or) $degree_of_first_middle_height==180{
+        @(if) $degree_of_second_middle_height!= 0 @(and) $degree_of_second_middle_height!= 180 {
+            $_k_of_second_middle_height = (-1)/(@(tan)($degree_of_second_middle_height))
+            $_b_of_second_middle_height = (($g_y2+$g_y3)/2)-($_k_of_second_middle_height*($g_x2+$g_x3)/2)
+             $mimyanc_hatman_x = ($g_x1+$g_x2)/2
+            $mimyanc_hatman_y = ($_k_of_second_middle_height*$mimyanc_hatman_x)+$_b_of_second_middle_height
+        }@(else){
+          $mimyanc_hatman_x = ($g_x1+$g_x2)/2
+          $mimyanc_hatman_y = ($g_y1+$g_y2)/2
+        }
+      }
+      @(if) $degree_of_second_middle_height ==0 @(or) $degree_of_second_middle_height==180{
+        @(if) $degree_of_first_middle_height!= 0 @(and) $degree_of_first_middle_height!= 180 {
+          $_k_of_first_middle_height = (-1)/(@(tan)($degree_of_first_middle_height))
+         $_b_of_first_middle_height = (($g_y1+$g_y2)/2)-($_k_of_first_middle_height*($g_x1+$g_x2)/2)
+          $mimyanc_hatman_x = ($g_x2+$g_x3)/2
+          $mimyanc_hatman_y = ($_k_of_first_middle_height*$mimyanc_hatman_x)+$_b_of_first_middle_height
+        }@(else){
+          $mimyanc_hatman_x = ($g_x2+$g_x3)/2
+          $mimyanc_hatman_y = ($g_y2+$g_y3)/2
+        }
+      }
+  
+    }
+    drawLine $mimyanc_hatman_x@(,)$mimyanc_hatman_y@(,)$g_x1@(,)$g_y1@(,)"transparent"
+    @(turnleft) 90
+    $_big_r = ($length_AB*$length_BC*$length_AC)/(4*$_area)
+    @(pendown)
+    @(penwidth) 1.5
+    @(repeat) 360 {
+      @(forward) $_big_r*3.14/180
+      @(turnleft) 1
+    }
+    @(fontsize) 16 
+    @(go) 25@(,)580
+    @(pencolor) 0@(,)121@(,)107
+    @(direction) 0
+    @(print) "Արտագծյալ շրջանագծի կենտրոնի կոորդինատներ  ("+$mimyanc_hatman_x+";"+(400-$mimyanc_hatman_y)+")"
+
+      ## artagcyali R
+    @(pencolor) 0@(,)121@(,)107
+     @(go) 25@(,)630
+    @(fontsize) 16
+     @(print) "R= "+$_big_r
+
+
+  }
+  @(direction) 0
+
+
+
+
+
+
+
+
+$_tirangle_type = ""
+@(if) (($length_AB==$length_BC) @(or) ($length_AB==$length_AC) @(or) ($length_BC==$length_AC)){
+  $_tirangle_type = "Հավասարասրուն"
+  @(if) ($length_AB==$length_BC) @(and) ($length_AB==$length_AC) {
+  $_tirangle_type = "Հավասարակողմ"
+  }
+}
+$_angle_type = "Սուրանկյուն"
+@(if) (($peak_A>90) @(or) ($peak_B>90) @(or) ($peak_C>90)){
+  $_angle_type = "Բութանկյուն"
+}@(else){
+  @(if) (($peak_A==90) @(or) ($peak_B==90) @(or) ($peak_C==90)){
+    $_angle_type = "Ուղղանկյուն"
+  }
+}
+  
+@(fontsize) 20
+@(go) 25@(,)755
+@(pencolor) 216@(,)27@(,)96
+@(direction) 0
+@(print) $_tirangle_type+" "+$_angle_type+" եռանկյուն"
+
+
+  @(direction) 0
+  # writing letters
+  @(pencolor) 121@(,) 85@(,) 72
+  @(fontsize) 14
+  @(go) $g_x1@(,) $g_y1
+  @(print) "A"
+  @(go) $g_x2@(,) $g_y2
+  @(print) "B"
+  @(go) $g_x3@(,) $g_y3
+  @(print) "C"
+
+  @(fontsize) 20
+  ##coords
+  @(pencolor) 63@(,)81@(,)181
+  @(go) 450@(,)25
+  @(print) "A("+ $g_x1+";"+(400-$g_y1)+")"
+  @(go) 450@(,)50
+  @(print) "B("+ $g_x2+";"+(400-$g_y2)+")"
+  @(go) 450@(,)75
+  @(print) "C("+ $g_x3+";"+(400-$g_y3)+")"
+  
+
+  @(fontsize) 20
+  ##degrees
+  @(pencolor) 244@(,)67@(,)54
+  @(go) 450@(,)125
+  @(print) "<A="+$peak_A 
+  @(go) 450@(,)150
+  @(print) "<B="+$peak_B
+  @(go) 450@(,)175
+  @(print) "<C="+$peak_C
+  
+
+  ##lenghts
+  @(go) 450@(,)225
+  @(pencolor) 33@(,)150@(,)243
+
+  @(print) "AB="+ $length_AB
+  @(go) 450@(,)250
+  @(print) "BC="+ $length_BC
+  @(go) 450@(,)275
+  @(print) "AC="+ $length_AC
+
+  ## Makeres
+   @(pencolor) 255@(,)152@(,)0
+  @(go) 450@(,)325
+  @(print) "S"
+  @(fontsize) 12
+  @(go) 460@(,)335
+  @(print) "ABC"
+  @(go) 485@(,)325
+  @(fontsize) 20
+  @(print) "="+$_area
+
+ @(spritehide)
+}
