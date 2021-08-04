@@ -1,0 +1,1273 @@
+kturtle-script-v1.0
+#    Program for drawing 3D objects and rotating them around the given axis.
+#    Copyright (C) 2021  Edgar Harutyunyan (edgar.harutyunyan.02@gmail.com)
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to the Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+@(learn) getLength $x1@(,)$y1@(,)$x2@(,)$y2 {
+  #gtnum e  hatvaci erkarutyun@
+  @(return) @(sqrt) ($x1-$x2)*($x1-$x2)+($y1-$y2)*($y1-$y2)
+}
+
+@(learn) kramer_x $kx_a1@(,)$kx_b1@(,)$kx_c1@(,)$kx_a2@(,)$kx_b2@(,)$kx_c2 {
+  @(return) ($kx_b2*$kx_c1-$kx_b1*$kx_c2)/($kx_a1*$kx_b2-$kx_a2*$kx_b1)
+}
+
+@(learn) kramer_y $ky_a1@(,)$ky_b1@(,)$ky_c1@(,)$ky_a2@(,)$ky_b2@(,)$ky_c2 {
+  @(return) ($ky_a1*$ky_c2-$ky_a2*$ky_c1)/($ky_a1*$ky_b2-$ky_a2*$ky_b1)
+}
+
+@(learn) eq_of_line_k $eq_x1@(,)$eq_y1@(,)$eq_x2@(,)$eq_y2 {
+# veradarznum e ayd 2 keterov ancnox uxxi havasarman K gorcakci ankyunayin chap@
+  @(if) ($eq_x1!=$eq_x2) {
+    $eq_degree = @(arctan)(kramer_x $eq_x1@(,)1@(,)$eq_y1@(,)$eq_x2@(,)1@(,)$eq_y2)
+  }@(else) {
+    @(if)($eq_y1<$eq_y2){
+      $eq_degree = 90
+    }@(else){
+      $eq_degree = -90
+    }
+  }
+  @(return) $eq_degree
+}
+
+@(learn) eq_of_line_b $eq_x1@(,)$eq_y1@(,)$eq_x2@(,)$eq_y2 {
+  # veradarznum e ayd 2 keterov ancnox uxxi havasarman B gorcakic@
+  @(if) ($eq_x1!=$eq_x2) {
+    $b_gorcakic = kramer_y $eq_x1@(,)1@(,)$eq_y1@(,)$eq_x2@(,)1@(,)$eq_y2
+    @(return) $b_gorcakic
+  }@(else){
+    @(return) "infinite"
+  }
+}
+@(learn) drawLine $_dr_x1@(,)$_dr_y1@(,)$_dr_x2@(,)$_dr_y2{
+# gcum e hatvats 
+  @(pendown)
+  @(go) $_dr_x1@(,)$_dr_y1
+  $len = getLength $_dr_x1@(,)$_dr_y1@(,)$_dr_x2@(,)$_dr_y2
+  $degree = eq_of_line_k $_dr_x1@(,)$_dr_y1@(,)$_dr_x2@(,)$_dr_y2
+  @(if) ($_dr_x1>$_dr_x2){
+    @(direction)  $degree-90
+  }@(else){
+    @(direction)  $degree+90
+  }
+  
+  @(pendown)
+  @(fw) $len
+ 
+} 
+
+@(learn) convert_x $cx@(,)$cy@(,)$cz{
+ #poxakerpum e 3d ket@ 2d keti
+  @(return) ($dist*$cx)/($dist-$cz)+0.5
+}
+
+@(learn) convert_y $cx@(,)$cy@(,)$cz{
+#poxakerpum e 3d ket@ 2d keti
+  @(return) ($dist*$cy)/($dist-$cz)-0.5
+}
+
+
+@(reset)
+@(clear)
+$width = 1500
+$height = 1500
+$angle = 0
+@(canvassize) $width*1.5@(,)$height*1.5
+@(penwidth) 10
+@(pendown)
+@(spritehide)
+$k = 1
+$dist = 5
+
+@(message) ("Ծրագիրը գծում է Ձեր ընտրած մարմինը և պտտում այն որևէ առանցքի շուրջ")
+
+$body = 0
+$body_wrong = -1
+@(while)(($body!=1 @(and) $body!=2 @(and) $body!=3)@(or) $body == ""){
+  $body_wrong = $body_wrong+1
+  @(if)($body_wrong>0){
+    @(message)("Սխալ երկրաչափական մարմին")
+  }
+  $body = @(ask)("Ի՞նչ երկրաչափական մարմին եք ցանկանում գծել․ 1-բուրգ, 2-պրիզմա, 3-կամայական կոորդինատներով մարմին")
+}
+
+@(if)($body==1){
+  #Burg
+  $sub_body = 0
+  $sub_body_wrong = -1
+  @(while)(($sub_body!=1 @(and) $sub_body!=2)@(or) $sub_body == ""){
+  $sub_body_wrong = $sub_body_wrong+1
+  @(if)($sub_body_wrong>0){
+    @(message)("Սխալ երկրաչափական մարմին")
+  }
+    $sub_body = @(ask)("Ի՞նչ տեսակի բուրգ եք ցանկանում գծել․ 1-եռանկյուն, 2-քառանկյուն")
+  }
+
+  @(if)($sub_body==1){
+  #erankyun burg	
+
+#arancq
+$axis_wrong = -1
+$axis = ""
+@(while)($axis!="x"@(and) $axis!="X"@(and)$axis!="y"@(and)$axis!="Y"@(and)$axis!="z"@(and)$axis!="Z"){
+  $axis_wrong=$axis_wrong+1
+  @(if)($axis_wrong>0){
+    @(message)("Սխալ առանցք")
+  }
+  $axis = @(ask)("Ներմուծեք պտտման առանցքը՝  x, y, z")
+}
+
+@(if)($axis=="x" @(or) $axis=="X"){
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) $rcx_x
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) ($rcy_y*@(cos)($angle))-($rcy_z*@(sin)($angle))
+}
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) ($rcz_y*@(sin)($angle))+($rcz_z*@(cos)($angle))
+  }
+}@(else) @(if)($axis=="y" @(or) $axis=="Y"){
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) ($rcx_x*@(cos)($angle))-($rcx_z*@(sin)($angle))
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) $rcy_y
+  }
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) ($rcz_x*@(sin)($angle))+($rcz_z*@(cos)($angle))
+  }
+}@(else) @(if)($axis=="z" @(or) $axis=="Z"){
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) ($rcx_x*@(cos)($angle))-($rcx_y*@(sin)($angle))
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) ($rcy_x*@(sin)($angle))+($rcy_y*@(cos)($angle))
+}
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) $rcz_z
+  }
+
+}@(else) {
+
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) $rcx_x
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) $rcy_y
+}
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) $rcz_z
+  }
+}
+
+
+@(while)(@(true)){
+$point1_x = -1
+$point1_y = -1
+$point1_z = -0.57735
+$point1_x_r = rotation_x $point1_x@(,)$point1_y@(,)$point1_z
+$point1_y_r = rotation_y $point1_x@(,)$point1_y@(,)$point1_z
+$point1_z_r = rotation_z $point1_x@(,)$point1_y@(,)$point1_z
+$point1_x_c = convert_x $point1_x_r@(,)$point1_y_r@(,)$point1_z_r
+$point1_y_c = convert_y $point1_x_r@(,)$point1_y_r@(,)$point1_z_r
+
+
+$point2_x = 1
+$point2_y = -1
+$point2_z = -0.57735
+$point2_x_r = rotation_x $point2_x@(,)$point2_y@(,)$point2_z
+$point2_y_r = rotation_y $point2_x@(,)$point2_y@(,)$point2_z
+$point2_z_r = rotation_z $point2_x@(,)$point2_y@(,)$point2_z
+$point2_x_c = convert_x $point2_x_r@(,)$point2_y_r@(,)$point2_z_r
+$point2_y_c = convert_y $point2_x_r@(,)$point2_y_r@(,)$point2_z_r
+
+$point3_x = 0
+$point3_y = -1
+$point3_z = 1.1547
+$point3_x_r = rotation_x $point3_x@(,)$point3_y@(,)$point3_z
+$point3_y_r = rotation_y $point3_x@(,)$point3_y@(,)$point3_z
+$point3_z_r = rotation_z $point3_x@(,)$point3_y@(,)$point3_z
+$point3_x_c = convert_x $point3_x_r@(,)$point3_y_r@(,)$point3_z_r
+$point3_y_c = convert_y $point3_x_r@(,)$point3_y_r@(,)$point3_z_r
+
+$point4_x = 0
+$point4_y = 1
+$point4_z =  0
+$point4_x_r = rotation_x $point4_x@(,)$point4_y@(,)$point4_z
+$point4_y_r = rotation_y $point4_x@(,)$point4_y@(,)$point4_z
+$point4_z_r = rotation_z $point4_x@(,)$point4_y@(,)$point4_z
+$point4_x_c = convert_x $point4_x_r@(,)$point4_y_r@(,)$point4_z_r
+$point4_y_c = convert_y $point4_x_r@(,)$point4_y_r@(,)$point4_z_r
+
+drawLine ($point1_x_c*$width/2+$width/2)@(,)($height/2-$point1_y_c*$width/2)@(,)($point2_x_c*$width/2+$width/2)@(,)($height/2-$point2_y_c*$width/2)
+
+drawLine ($point2_x_c*$width/2+$width/2)@(,)($height/2-$point2_y_c*$width/2)@(,)($point3_x_c*$width/2+$width/2)@(,)($height/2-$point3_y_c*$width/2)
+
+drawLine ($point1_x_c*$width/2+$width/2)@(,)($height/2-$point1_y_c*$width/2)@(,)($point3_x_c*$width/2+$width/2)@(,)($height/2-$point3_y_c*$width/2)
+
+
+drawLine ($point4_x_c*$width/2+$width/2)@(,)($height/2-$point4_y_c*$width/2)@(,)($point1_x_c*$width/2+$width/2)@(,)($height/2-$point1_y_c*$width/2)
+
+drawLine ($point4_x_c*$width/2+$width/2)@(,)($height/2-$point4_y_c*$width/2)@(,)($point2_x_c*$width/2+$width/2)@(,)($height/2-$point2_y_c*$width/2)
+
+drawLine ($point4_x_c*$width/2+$width/2)@(,)($height/2-$point4_y_c*$width/2)@(,)($point3_x_c*$width/2+$width/2)@(,)($height/2-$point3_y_c*$width/2)
+
+$angle=$angle+1
+$k = $k*(-1)
+@(if)($k==1){
+  @(clear)
+}
+}  
+  }@(else) @(if)($sub_body==2){
+  #qarankyun burg
+  
+#erkarutyun
+$l = -1 
+$l_wrong = -1
+@(while)($l<0 @(or) $l>100){
+  $l_wrong=$l_wrong+1
+  @(if)($l_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $l = @(ask)("Ներմուծեք հիմքի երկարությունը՝ 1-100")
+}
+
+#laynutyun
+$w = -1
+$w_wrong = -1
+@(while)($w<0 @(or) $w>100){
+  $w_wrong=$w_wrong+1
+  @(if)($w_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $w = @(ask)("Ներմուծեք հիմքի լայնությունը՝ 1-100")
+}
+
+#barzrutyun
+$h = -1
+$h_wrong = -1
+@(while)($h<0 @(or) $h>100){
+  $h_wrong=$h_wrong+1
+  @(if)($h_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $h = @(ask)("Ներմուծեք բուրգի բարձրությունը՝ 1-100")
+}
+$l = $l/50
+$w = $w/50
+$h = $h/50
+
+#heravorutyun
+
+#arancq
+$axis_wrong = -1
+$axis = ""
+@(while)($axis!="x"@(and) $axis!="X"@(and)$axis!="y"@(and)$axis!="Y"@(and)$axis!="z"@(and)$axis!="Z"){
+  $axis_wrong=$axis_wrong+1
+  @(if)($axis_wrong>0){
+    @(message)("Սխալ առանցք")
+  }
+  $axis = @(ask)("Ներմուծեք պտտման առանցքը՝  x, y, z")
+}
+
+@(if)($axis=="x" @(or) $axis=="X"){
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) $rcx_x
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) ($rcy_y*@(cos)($angle))-($rcy_z*@(sin)($angle))
+}
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) ($rcz_y*@(sin)($angle))+($rcz_z*@(cos)($angle))
+  }
+}@(else) @(if)($axis=="y" @(or) $axis=="Y"){
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) ($rcx_x*@(cos)($angle))-($rcx_z*@(sin)($angle))
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) $rcy_y
+  }
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) ($rcz_x*@(sin)($angle))+($rcz_z*@(cos)($angle))
+  }
+}@(else) @(if)($axis=="z" @(or) $axis=="Z"){
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) ($rcx_x*@(cos)($angle))-($rcx_y*@(sin)($angle))
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) ($rcy_x*@(sin)($angle))+($rcy_y*@(cos)($angle))
+}
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) $rcz_z
+  }
+
+}@(else) {
+
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) $rcx_x
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) $rcy_y
+}
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) $rcz_z
+  }
+}
+
+
+@(while)(@(true)){
+$point1_x = -1*($l/2)
+$point1_y = -1*($h/2)
+$point1_z = -1*($w/2)
+$point1_x_r = rotation_x $point1_x@(,)$point1_y@(,)$point1_z
+$point1_y_r = rotation_y $point1_x@(,)$point1_y@(,)$point1_z
+$point1_z_r = rotation_z $point1_x@(,)$point1_y@(,)$point1_z
+$point1_x_c = convert_x $point1_x_r@(,)$point1_y_r@(,)$point1_z_r
+$point1_y_c = convert_y $point1_x_r@(,)$point1_y_r@(,)$point1_z_r
+
+
+$point2_x = -1*($l/2)
+$point2_y = -1*($h/2)
+$point2_z = 1*($w/2)
+$point2_x_r = rotation_x $point2_x@(,)$point2_y@(,)$point2_z
+$point2_y_r = rotation_y $point2_x@(,)$point2_y@(,)$point2_z
+$point2_z_r = rotation_z $point2_x@(,)$point2_y@(,)$point2_z
+$point2_x_c = convert_x $point2_x_r@(,)$point2_y_r@(,)$point2_z_r
+$point2_y_c = convert_y $point2_x_r@(,)$point2_y_r@(,)$point2_z_r
+
+$point3_x = $l/2
+$point3_y = -1*($h/2)
+$point3_z = 1*($w/2)
+$point3_x_r = rotation_x $point3_x@(,)$point3_y@(,)$point3_z
+$point3_y_r = rotation_y $point3_x@(,)$point3_y@(,)$point3_z
+$point3_z_r = rotation_z $point3_x@(,)$point3_y@(,)$point3_z
+$point3_x_c = convert_x $point3_x_r@(,)$point3_y_r@(,)$point3_z_r
+$point3_y_c = convert_y $point3_x_r@(,)$point3_y_r@(,)$point3_z_r
+
+$point4_x = $l/2
+$point4_y = -1*($h/2)
+$point4_z = -1*($w/2)
+$point4_x_r = rotation_x $point4_x@(,)$point4_y@(,)$point4_z
+$point4_y_r = rotation_y $point4_x@(,)$point4_y@(,)$point4_z
+$point4_z_r = rotation_z $point4_x@(,)$point4_y@(,)$point4_z
+$point4_x_c = convert_x $point4_x_r@(,)$point4_y_r@(,)$point4_z_r
+$point4_y_c = convert_y $point4_x_r@(,)$point4_y_r@(,)$point4_z_r
+
+$point5_x = 0
+$point5_y = $h/2
+$point5_z =  0
+$point5_x_r = rotation_x $point5_x@(,)$point5_y@(,)$point5_z
+$point5_y_r = rotation_y $point5_x@(,)$point5_y@(,)$point5_z
+$point5_z_r = rotation_z $point5_x@(,)$point5_y@(,)$point5_z
+$point5_x_c = convert_x $point5_x_r@(,)$point5_y_r@(,)$point5_z_r
+$point5_y_c = convert_y $point5_x_r@(,)$point5_y_r@(,)$point5_z_r
+
+drawLine ($point1_x_c*$width/2+$width/2)@(,)($height/2-$point1_y_c*$width/2)@(,)($point2_x_c*$width/2+$width/2)@(,)($height/2-$point2_y_c*$width/2)
+
+drawLine ($point2_x_c*$width/2+$width/2)@(,)($height/2-$point2_y_c*$width/2)@(,)($point3_x_c*$width/2+$width/2)@(,)($height/2-$point3_y_c*$width/2)
+
+drawLine ($point3_x_c*$width/2+$width/2)@(,)($height/2-$point3_y_c*$width/2)@(,)($point4_x_c*$width/2+$width/2)@(,)($height/2-$point4_y_c*$width/2)
+
+drawLine ($point1_x_c*$width/2+$width/2)@(,)($height/2-$point1_y_c*$width/2)@(,)($point4_x_c*$width/2+$width/2)@(,)($height/2-$point4_y_c*$width/2)
+
+
+drawLine ($point5_x_c*$width/2+$width/2)@(,)($height/2-$point5_y_c*$width/2)@(,)($point1_x_c*$width/2+$width/2)@(,)($height/2-$point1_y_c*$width/2)
+
+drawLine ($point5_x_c*$width/2+$width/2)@(,)($height/2-$point5_y_c*$width/2)@(,)($point2_x_c*$width/2+$width/2)@(,)($height/2-$point2_y_c*$width/2)
+
+drawLine ($point5_x_c*$width/2+$width/2)@(,)($height/2-$point5_y_c*$width/2)@(,)($point3_x_c*$width/2+$width/2)@(,)($height/2-$point3_y_c*$width/2)
+
+drawLine ($point5_x_c*$width/2+$width/2)@(,)($height/2-$point5_y_c*$width/2)@(,)($point4_x_c*$width/2+$width/2)@(,)($height/2-$point4_y_c*$width/2)
+
+
+$angle=$angle+1
+$k = $k*(-1)
+@(if)($k==1){
+  @(clear)
+}
+}  
+  }
+
+  
+}@(else) @(if)($body==2){
+  #prizma
+  $sub_body = 0
+  $sub_body_wrong = -1
+  @(while)(($sub_body!=1 @(and) $sub_body!=2)@(or) $sub_body == ""){
+  $sub_body_wrong = $sub_body_wrong+1
+  @(if)($sub_body_wrong>0){
+    @(message)("Սխալ երկրաչափական մարմին")
+  }
+    $sub_body = @(ask)("Ի՞նչ տեսակի պրիզմա եք ցանկանում գծել․ 1-եռանկյուն, 2-քառանկյուն")
+  }
+
+@(if)($sub_body==1){
+  #erankyun prizma
+
+#barzrutyun
+$h = -1
+$h_wrong = -1
+@(while)($h<0 @(or) $h>100){
+  $h_wrong=$h_wrong+1
+  @(if)($h_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $h = @(ask)("Ներմուծեք պրիզմայի բարձրությունը՝ 1-100")
+}
+
+$h = $h/50
+
+#arancq
+$axis_wrong = -1
+$axis = ""
+@(while)($axis!="x"@(and) $axis!="X"@(and)$axis!="y"@(and)$axis!="Y"@(and)$axis!="z"@(and)$axis!="Z"){
+  $axis_wrong=$axis_wrong+1
+  @(if)($axis_wrong>0){
+    @(message)("Սխալ առանցք")
+  }
+  $axis = @(ask)("Ներմուծեք պտտման առանցքը՝  x, y, z")
+}
+
+@(if)($axis=="x" @(or) $axis=="X"){
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) $rcx_x
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) ($rcy_y*@(cos)($angle))-($rcy_z*@(sin)($angle))
+}
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) ($rcz_y*@(sin)($angle))+($rcz_z*@(cos)($angle))
+  }
+}@(else) @(if)($axis=="y" @(or) $axis=="Y"){
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) ($rcx_x*@(cos)($angle))-($rcx_z*@(sin)($angle))
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) $rcy_y
+  }
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) ($rcz_x*@(sin)($angle))+($rcz_z*@(cos)($angle))
+  }
+}@(else) @(if)($axis=="z" @(or) $axis=="Z"){
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) ($rcx_x*@(cos)($angle))-($rcx_y*@(sin)($angle))
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) ($rcy_x*@(sin)($angle))+($rcy_y*@(cos)($angle))
+}
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) $rcz_z
+  }
+
+}@(else) {
+
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) $rcx_x
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) $rcy_y
+}
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) $rcz_z
+  }
+}
+
+
+@(while)(@(true)){
+$point1_x = -1
+$point1_y = -1*($h/2)
+$point1_z = -0.57735
+$point1_x_r = rotation_x $point1_x@(,)$point1_y@(,)$point1_z
+$point1_y_r = rotation_y $point1_x@(,)$point1_y@(,)$point1_z
+$point1_z_r = rotation_z $point1_x@(,)$point1_y@(,)$point1_z
+$point1_x_c = convert_x $point1_x_r@(,)$point1_y_r@(,)$point1_z_r
+$point1_y_c = convert_y $point1_x_r@(,)$point1_y_r@(,)$point1_z_r
+
+
+$point2_x = 1
+$point2_y = -1*($h/2)
+$point2_z = -0.57735
+$point2_x_r = rotation_x $point2_x@(,)$point2_y@(,)$point2_z
+$point2_y_r = rotation_y $point2_x@(,)$point2_y@(,)$point2_z
+$point2_z_r = rotation_z $point2_x@(,)$point2_y@(,)$point2_z
+$point2_x_c = convert_x $point2_x_r@(,)$point2_y_r@(,)$point2_z_r
+$point2_y_c = convert_y $point2_x_r@(,)$point2_y_r@(,)$point2_z_r
+
+$point3_x = 0
+$point3_y = -1*($h/2)
+$point3_z = 1.1547
+$point3_x_r = rotation_x $point3_x@(,)$point3_y@(,)$point3_z
+$point3_y_r = rotation_y $point3_x@(,)$point3_y@(,)$point3_z
+$point3_z_r = rotation_z $point3_x@(,)$point3_y@(,)$point3_z
+$point3_x_c = convert_x $point3_x_r@(,)$point3_y_r@(,)$point3_z_r
+$point3_y_c = convert_y $point3_x_r@(,)$point3_y_r@(,)$point3_z_r
+
+$point4_x = -1
+$point4_y = $h/2
+$point4_z = -0.57735
+$point4_x_r = rotation_x $point4_x@(,)$point4_y@(,)$point4_z
+$point4_y_r = rotation_y $point4_x@(,)$point4_y@(,)$point4_z
+$point4_z_r = rotation_z $point4_x@(,)$point4_y@(,)$point4_z
+$point4_x_c = convert_x $point4_x_r@(,)$point4_y_r@(,)$point4_z_r
+$point4_y_c = convert_y $point4_x_r@(,)$point4_y_r@(,)$point4_z_r
+
+$point5_x = 1
+$point5_y = $h/2
+$point5_z = -0.57735
+$point5_x_r = rotation_x $point5_x@(,)$point5_y@(,)$point5_z
+$point5_y_r = rotation_y $point5_x@(,)$point5_y@(,)$point5_z
+$point5_z_r = rotation_z $point5_x@(,)$point5_y@(,)$point5_z
+$point5_x_c = convert_x $point5_x_r@(,)$point5_y_r@(,)$point5_z_r
+$point5_y_c = convert_y $point5_x_r@(,)$point5_y_r@(,)$point5_z_r
+
+$point6_x = 0
+$point6_y = $h/2
+$point6_z = 1.1547
+$point6_x_r = rotation_x $point6_x@(,)$point6_y@(,)$point6_z
+$point6_y_r = rotation_y $point6_x@(,)$point6_y@(,)$point6_z
+$point6_z_r = rotation_z $point6_x@(,)$point6_y@(,)$point6_z
+$point6_x_c = convert_x $point6_x_r@(,)$point6_y_r@(,)$point6_z_r
+$point6_y_c = convert_y $point6_x_r@(,)$point6_y_r@(,)$point6_z_r
+
+
+drawLine ($point1_x_c*$width/2+$width/2)@(,)($height/2-$point1_y_c*$width/2)@(,)($point2_x_c*$width/2+$width/2)@(,)($height/2-$point2_y_c*$width/2)
+
+drawLine ($point2_x_c*$width/2+$width/2)@(,)($height/2-$point2_y_c*$width/2)@(,)($point3_x_c*$width/2+$width/2)@(,)($height/2-$point3_y_c*$width/2)
+
+drawLine ($point3_x_c*$width/2+$width/2)@(,)($height/2-$point3_y_c*$width/2)@(,)($point1_x_c*$width/2+$width/2)@(,)($height/2-$point1_y_c*$width/2)
+
+
+
+drawLine ($point5_x_c*$width/2+$width/2)@(,)($height/2-$point5_y_c*$width/2)@(,)($point4_x_c*$width/2+$width/2)@(,)($height/2-$point4_y_c*$width/2)
+
+drawLine ($point6_x_c*$width/2+$width/2)@(,)($height/2-$point6_y_c*$width/2)@(,)($point5_x_c*$width/2+$width/2)@(,)($height/2-$point5_y_c*$width/2)
+
+drawLine ($point6_x_c*$width/2+$width/2)@(,)($height/2-$point6_y_c*$width/2)@(,)($point4_x_c*$width/2+$width/2)@(,)($height/2-$point4_y_c*$width/2)
+
+
+drawLine ($point4_x_c*$width/2+$width/2)@(,)($height/2-$point4_y_c*$width/2)@(,)($point1_x_c*$width/2+$width/2)@(,)($height/2-$point1_y_c*$width/2)
+
+drawLine ($point5_x_c*$width/2+$width/2)@(,)($height/2-$point5_y_c*$width/2)@(,)($point2_x_c*$width/2+$width/2)@(,)($height/2-$point2_y_c*$width/2)
+
+drawLine ($point6_x_c*$width/2+$width/2)@(,)($height/2-$point6_y_c*$width/2)@(,)($point3_x_c*$width/2+$width/2)@(,)($height/2-$point3_y_c*$width/2)
+
+
+$angle=$angle+1
+$k = $k*(-1)
+@(if)($k==1){
+  @(clear)
+}
+}  
+}@(else) @(if)($sub_body==2){
+  #qarankyun prizma
+  
+#erkarutyun
+$l = -1 
+$l_wrong = -1
+@(while)($l<0 @(or) $l>100){
+  $l_wrong=$l_wrong+1
+  @(if)($l_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $l = @(ask)("Ներմուծեք քառանկյուն պրիզմայի հիմքի երկարությունը՝ 1-100")
+}
+
+#laynutyun
+$w = -1
+$w_wrong = -1
+@(while)($w<0 @(or) $w>100){
+  $w_wrong=$w_wrong+1
+  @(if)($w_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $w = @(ask)("Ներմուծեք քառանկյուն պրիզմայի հիմքի լայնությունը՝ 1-100")
+}
+
+#barzrutyun
+$h = -1
+$h_wrong = -1
+@(while)($h<0 @(or) $h>100){
+  $h_wrong=$h_wrong+1
+  @(if)($h_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $h = @(ask)("Ներմուծեք պրիզմայի բարձրությունը՝ 1-100")
+}
+$l = $l/50
+$w = $w/50
+$h = $h/50
+
+#heravorutyun
+#arancq
+$axis_wrong = -1
+$axis = ""
+@(while)($axis!="x"@(and) $axis!="X"@(and)$axis!="y"@(and)$axis!="Y"@(and)$axis!="z"@(and)$axis!="Z"){
+  $axis_wrong=$axis_wrong+1
+  @(if)($axis_wrong>0){
+    @(message)("Սխալ առանցք")
+  }
+  $axis = @(ask)("Ներմուծեք պտտման առանցքը՝  x, y, z")
+}
+
+@(if)($axis=="x" @(or) $axis=="X"){
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) $rcx_x
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) ($rcy_y*@(cos)($angle))-($rcy_z*@(sin)($angle))
+}
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) ($rcz_y*@(sin)($angle))+($rcz_z*@(cos)($angle))
+  }
+}@(else) @(if)($axis=="y" @(or) $axis=="Y"){
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) ($rcx_x*@(cos)($angle))-($rcx_z*@(sin)($angle))
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) $rcy_y
+  }
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) ($rcz_x*@(sin)($angle))+($rcz_z*@(cos)($angle))
+  }
+}@(else) @(if)($axis=="z" @(or) $axis=="Z"){
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) ($rcx_x*@(cos)($angle))-($rcx_y*@(sin)($angle))
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) ($rcy_x*@(sin)($angle))+($rcy_y*@(cos)($angle))
+}
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) $rcz_z
+  }
+
+}@(else) {
+
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) $rcx_x
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) $rcy_y
+}
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) $rcz_z
+  }
+}
+
+
+@(while)(@(true)){
+$point1_x = -1*($l/2)
+$point1_y = -1*($h/2)
+$point1_z = -1*($w/2)
+$point1_x_r = rotation_x $point1_x@(,)$point1_y@(,)$point1_z
+$point1_y_r = rotation_y $point1_x@(,)$point1_y@(,)$point1_z
+$point1_z_r = rotation_z $point1_x@(,)$point1_y@(,)$point1_z
+$point1_x_c = convert_x $point1_x_r@(,)$point1_y_r@(,)$point1_z_r
+$point1_y_c = convert_y $point1_x_r@(,)$point1_y_r@(,)$point1_z_r
+
+
+$point2_x = -1*($l/2)
+$point2_y = $h/2
+$point2_z = -1*($w/2)
+$point2_x_r = rotation_x $point2_x@(,)$point2_y@(,)$point2_z
+$point2_y_r = rotation_y $point2_x@(,)$point2_y@(,)$point2_z
+$point2_z_r = rotation_z $point2_x@(,)$point2_y@(,)$point2_z
+$point2_x_c = convert_x $point2_x_r@(,)$point2_y_r@(,)$point2_z_r
+$point2_y_c = convert_y $point2_x_r@(,)$point2_y_r@(,)$point2_z_r
+
+$point3_x = $l/2
+$point3_y = $h/2
+$point3_z = -1*($w/2)
+$point3_x_r = rotation_x $point3_x@(,)$point3_y@(,)$point3_z
+$point3_y_r = rotation_y $point3_x@(,)$point3_y@(,)$point3_z
+$point3_z_r = rotation_z $point3_x@(,)$point3_y@(,)$point3_z
+$point3_x_c = convert_x $point3_x_r@(,)$point3_y_r@(,)$point3_z_r
+$point3_y_c = convert_y $point3_x_r@(,)$point3_y_r@(,)$point3_z_r
+
+$point4_x = $l/2
+$point4_y = -1*($h/2)
+$point4_z = -1*($w/2)
+$point4_x_r = rotation_x $point4_x@(,)$point4_y@(,)$point4_z
+$point4_y_r = rotation_y $point4_x@(,)$point4_y@(,)$point4_z
+$point4_z_r = rotation_z $point4_x@(,)$point4_y@(,)$point4_z
+$point4_x_c = convert_x $point4_x_r@(,)$point4_y_r@(,)$point4_z_r
+$point4_y_c = convert_y $point4_x_r@(,)$point4_y_r@(,)$point4_z_r
+
+$point5_x = -1*($l/2)
+$point5_y = -1*($h/2)
+$point5_z =  $w/2
+$point5_x_r = rotation_x $point5_x@(,)$point5_y@(,)$point5_z
+$point5_y_r = rotation_y $point5_x@(,)$point5_y@(,)$point5_z
+$point5_z_r = rotation_z $point5_x@(,)$point5_y@(,)$point5_z
+$point5_x_c = convert_x $point5_x_r@(,)$point5_y_r@(,)$point5_z_r
+$point5_y_c = convert_y $point5_x_r@(,)$point5_y_r@(,)$point5_z_r
+
+$point6_x = -1*($l/2)
+$point6_y = $h/2
+$point6_z = $w/2
+$point6_x_r = rotation_x $point6_x@(,)$point6_y@(,)$point6_z
+$point6_y_r = rotation_y $point6_x@(,)$point6_y@(,)$point6_z
+$point6_z_r = rotation_z $point6_x@(,)$point6_y@(,)$point6_z
+$point6_x_c = convert_x $point6_x_r@(,)$point6_y_r@(,)$point6_z_r
+$point6_y_c = convert_y $point6_x_r@(,)$point6_y_r@(,)$point6_z_r
+
+$point7_x = $l/2
+$point7_y = $h/2
+$point7_z = $w/2
+$point7_x_r = rotation_x $point7_x@(,)$point7_y@(,)$point7_z
+$point7_y_r = rotation_y $point7_x@(,)$point7_y@(,)$point7_z
+$point7_z_r = rotation_z $point7_x@(,)$point7_y@(,)$point7_z
+$point7_x_c = convert_x $point7_x_r@(,)$point7_y_r@(,)$point7_z_r
+$point7_y_c = convert_y $point7_x_r@(,)$point7_y_r@(,)$point7_z_r
+
+$point8_x = $l/2
+$point8_y = -1*($h/2)
+$point8_z = $w/2
+$point8_x_r = rotation_x $point8_x@(,)$point8_y@(,)$point8_z
+$point8_y_r = rotation_y $point8_x@(,)$point8_y@(,)$point8_z
+$point8_z_r = rotation_z $point8_x@(,)$point8_y@(,)$point8_z
+$point8_x_c = convert_x $point8_x_r@(,)$point8_y_r@(,)$point8_z_r
+$point8_y_c = convert_y $point8_x_r@(,)$point8_y_r@(,)$point8_z_r
+
+
+
+drawLine ($point1_x_c*$width/2+$width/2)@(,)($height/2-$point1_y_c*$width/2)@(,)($point2_x_c*$width/2+$width/2)@(,)($height/2-$point2_y_c*$width/2)
+
+drawLine ($point2_x_c*$width/2+$width/2)@(,)($height/2-$point2_y_c*$width/2)@(,)($point3_x_c*$width/2+$width/2)@(,)($height/2-$point3_y_c*$width/2)
+
+drawLine ($point3_x_c*$width/2+$width/2)@(,)($height/2-$point3_y_c*$width/2)@(,)($point4_x_c*$width/2+$width/2)@(,)($height/2-$point4_y_c*$width/2)
+
+drawLine ($point1_x_c*$width/2+$width/2)@(,)($height/2-$point1_y_c*$width/2)@(,)($point4_x_c*$width/2+$width/2)@(,)($height/2-$point4_y_c*$width/2)
+
+
+drawLine ($point5_x_c*$width/2+$width/2)@(,)($height/2-$point5_y_c*$width/2)@(,)($point6_x_c*$width/2+$width/2)@(,)($height/2-$point6_y_c*$width/2)
+
+drawLine ($point6_x_c*$width/2+$width/2)@(,)($height/2-$point6_y_c*$width/2)@(,)($point7_x_c*$width/2+$width/2)@(,)($height/2-$point7_y_c*$width/2)
+
+drawLine ($point7_x_c*$width/2+$width/2)@(,)($height/2-$point7_y_c*$width/2)@(,)($point8_x_c*$width/2+$width/2)@(,)($height/2-$point8_y_c*$width/2)
+
+drawLine ($point5_x_c*$width/2+$width/2)@(,)($height/2-$point5_y_c*$width/2)@(,)($point8_x_c*$width/2+$width/2)@(,)($height/2-$point8_y_c*$width/2)
+
+
+drawLine ($point5_x_c*$width/2+$width/2)@(,)($height/2-$point5_y_c*$width/2)@(,)($point1_x_c*$width/2+$width/2)@(,)($height/2-$point1_y_c*$width/2)
+
+drawLine ($point6_x_c*$width/2+$width/2)@(,)($height/2-$point6_y_c*$width/2)@(,)($point2_x_c*$width/2+$width/2)@(,)($height/2-$point2_y_c*$width/2)
+
+drawLine ($point7_x_c*$width/2+$width/2)@(,)($height/2-$point7_y_c*$width/2)@(,)($point3_x_c*$width/2+$width/2)@(,)($height/2-$point3_y_c*$width/2)
+
+drawLine ($point8_x_c*$width/2+$width/2)@(,)($height/2-$point8_y_c*$width/2)@(,)($point4_x_c*$width/2+$width/2)@(,)($height/2-$point4_y_c*$width/2)
+
+
+$angle=$angle+1
+$k = $k*(-1)
+@(if)($k==1){
+  @(clear)
+}
+}  
+
+}
+
+}@(else) @(if)($body==3 ){
+
+## Kamayakan Marmin
+
+# 1-in ket
+$point1_x_wrong = -1
+$point1_x = 1000
+@(while)($point1_x<-100 @(or) $point1_x>100){
+  $point1_x_wrong=$point1_x_wrong+1
+  @(if)($point1_x_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point1_x = @(ask)("Ներմուծեք A1 կետի x-ը՝ (-100; 100)")
+}
+$point1_y_wrong = -1
+$point1_y = 1000
+@(while)($point1_y<-100 @(or) $point1_y>100){
+  $point1_y_wrong=$point1_y_wrong+1
+  @(if)($point1_y_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point1_y = @(ask)("Ներմուծեք A1 կետի y-ը՝ (-100; 100)")
+}
+$point1_z_wrong = -1
+$point1_z = 1000
+@(while)($point1_z<-100 @(or) $point1_z>100){
+  $point1_z_wrong=$point1_z_wrong+1
+  @(if)($point1_z_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point1_z = @(ask)("Ներմուծեք A1 կետի z-ը՝ (-100; 100)")
+}
+
+# 2-rd ket
+$point2_x_wrong = -1
+$point2_x = 1000
+@(while)($point2_x<-100 @(or) $point2_x>100){
+  $point2_x_wrong=$point2_x_wrong+1
+  @(if)($point2_x_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point2_x = @(ask)("Ներմուծեք B1 կետի x-ը՝ (-100; 100)")
+}
+$point2_y_wrong = -1
+$point2_y = 1000
+@(while)($point2_y<-100 @(or) $point2_y>100){
+  $point2_y_wrong=$point2_y_wrong+1
+  @(if)($point2_y_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point2_y = @(ask)("Ներմուծեք B1 կետի y-ը՝ (-100; 100)")
+}
+$point2_z_wrong = -1
+$point2_z = 1000
+@(while)($point2_z<-100 @(or) $point2_z>100){
+  $point2_z_wrong=$point2_z_wrong+1
+  @(if)($point2_z_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point2_z = @(ask)("Ներմուծեք B1 կետի z-ը՝ (-100; 100)")
+}
+
+# 3-rd ket
+$point3_x_wrong = -1
+$point3_x = 1000
+@(while)($point3_x<-100 @(or) $point3_x>100){
+  $point3_x_wrong=$point3_x_wrong+1
+  @(if)($point3_x_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point3_x = @(ask)("Ներմուծեք C1 կետի x-ը՝ (-100; 100)")
+}
+$point3_y_wrong = -1
+$point3_y = 1000
+@(while)($point3_y<-100 @(or) $point3_y>100){
+  $point3_y_wrong=$point3_y_wrong+1
+  @(if)($point3_y_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point3_y = @(ask)("Ներմուծեք C1 կետի y-ը՝ (-100; 100)")
+}
+$point3_z_wrong = -1
+$point3_z = 1000
+@(while)($point3_z<-100 @(or) $point3_z>100){
+  $point3_z_wrong=$point3_z_wrong+1
+  @(if)($point3_z_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point3_z = @(ask)("Ներմուծեք C1 կետի z-ը՝ (-100; 100)")
+}
+
+# 4-rd ket
+$point4_x_wrong = -1
+$point4_x = 1000
+@(while)($point4_x<-100 @(or) $point4_x>100){
+  $point4_x_wrong=$point4_x_wrong+1
+  @(if)($point4_x_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point4_x = @(ask)("Ներմուծեք D1 կետի x-ը՝ (-100; 100)")
+}
+$point4_y_wrong = -1
+$point4_y = 1000
+@(while)($point4_y<-100 @(or) $point4_y>100){
+  $point4_y_wrong=$point4_y_wrong+1
+  @(if)($point4_y_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point4_y = @(ask)("Ներմուծեք D1 կետի y-ը՝ (-100; 100)")
+}
+$point4_z_wrong = -1
+$point4_z = 1000
+@(while)($point4_z<-100 @(or) $point4_z>100){
+  $point4_z_wrong=$point4_z_wrong+1
+  @(if)($point4_z_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point4_z = @(ask)("Ներմուծեք D1 կետի z-ը՝ (-100; 100)")
+}
+
+# 5-rd ket
+$point5_x_wrong = -1
+$point5_x = 1000
+@(while)($point5_x<-100 @(or) $point5_x>100){
+  $point5_x_wrong=$point5_x_wrong+1
+  @(if)($point5_x_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point5_x = @(ask)("Ներմուծեք A2 կետի x-ը՝ (-100; 100)")
+}
+$point5_y_wrong = -1
+$point5_y = 1000
+@(while)($point5_y<-100 @(or) $point5_y>100){
+  $point5_y_wrong=$point5_y_wrong+1
+  @(if)($point5_y_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point5_y = @(ask)("Ներմուծեք A2 կետի y-ը՝ (-100; 100)")
+}
+$point5_z_wrong = -1
+$point5_z = 1000
+@(while)($point5_z<-100 @(or) $point5_z>100){
+  $point5_z_wrong=$point5_z_wrong+1
+  @(if)($point5_z_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point5_z = @(ask)("Ներմուծեք A2 կետի z-ը՝ (-100; 100)")
+}
+
+# 6-rd ket
+$point6_x_wrong = -1
+$point6_x = 1000
+@(while)($point6_x<-100 @(or) $point6_x>100){
+  $point6_x_wrong=$point6_x_wrong+1
+  @(if)($point6_x_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point6_x = @(ask)("Ներմուծեք B2 կետի x-ը՝ (-100; 100)")
+}
+$point6_y_wrong = -1
+$point6_y = 1000
+@(while)($point6_y<-100 @(or) $point6_y>100){
+  $point6_y_wrong=$point6_y_wrong+1
+  @(if)($point6_y_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point6_y = @(ask)("Ներմուծեք B2 կետի y-ը՝ (-100; 100)")
+}
+$point6_z_wrong = -1
+$point6_z = 1000
+@(while)($point6_z<-100 @(or) $point6_z>100){
+  $point6_z_wrong=$point6_z_wrong+1
+  @(if)($point6_z_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point6_z = @(ask)("Ներմուծեք B2 կետի z-ը՝ (-100; 100)")
+}
+
+# 7-rd ket
+$point7_x_wrong = -1
+$point7_x = 1000
+@(while)($point7_x<-100 @(or) $point7_x>100){
+  $point7_x_wrong=$point7_x_wrong+1
+  @(if)($point7_x_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point7_x = @(ask)("Ներմուծեք C2 կետի x-ը՝ (-100; 100)")
+}
+$point7_y_wrong = -1
+$point7_y = 1000
+@(while)($point7_y<-100 @(or) $point7_y>100){
+  $point7_y_wrong=$point7_y_wrong+1
+  @(if)($point7_y_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point7_y = @(ask)("Ներմուծեք C2 կետի y-ը՝ (-100; 100)")
+}
+$point7_z_wrong = -1
+$point7_z = 1000
+@(while)($point7_z<-100 @(or) $point7_z>100){
+  $point7_z_wrong=$point7_z_wrong+1
+  @(if)($point7_z_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point7_z = @(ask)("Ներմուծեք C2 կետի z-ը՝ (-100; 100)")
+}
+
+
+# 8-rd ket
+$point8_x_wrong = -1
+$point8_x = 1000
+@(while)($point8_x<-100 @(or) $point8_x>100){
+  $point8_x_wrong=$point8_x_wrong+1
+  @(if)($point8_x_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point8_x = @(ask)("Ներմուծեք D2 կետի x-ը՝ (-100; 100)")
+}
+$point8_y_wrong = -1
+$point8_y = 1000
+@(while)($point8_y<-100 @(or) $point8_y>100){
+  $point8_y_wrong=$point8_y_wrong+1
+  @(if)($point8_y_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point8_y = @(ask)("Ներմուծեք D2 կետի y-ը՝ (-100; 100)")
+}
+$point8_z_wrong = -1
+$point8_z = 1000
+@(while)($point8_z<-100 @(or) $point8_z>100){
+  $point8_z_wrong=$point8_z_wrong+1
+  @(if)($point8_z_wrong>0){
+    @(message)("Նշված տիրույթին չպատկանող թիվ")
+  }
+  $point8_z = @(ask)("Ներմուծեք D2 կետի z-ը՝ (-100; 100)")
+}
+
+$point1_x = $point1_x/100
+$point1_y = $point1_y/100
+$point1_z = $point1_z/100
+
+$point2_x = $point2_x/100
+$point2_y = $point2_y/100
+$point2_z = $point2_z/100
+
+$point3_x = $point3_x/100
+$point3_y = $point3_y/100
+$point3_z = $point3_z/100
+
+$point4_x = $point4_x/100
+$point4_y = $point4_y/100
+$point4_z = $point4_z/100
+
+$point5_x = $point5_x/100
+$point5_y = $point5_y/100
+$point5_z = $point5_z/100
+
+$point6_x = $point6_x/100
+$point6_y = $point6_y/100
+$point6_z = $point6_z/100
+
+$point7_x = $point7_x/100
+$point7_y = $point7_y/100
+$point7_z = $point7_z/100
+
+$point8_x = $point8_x/100
+$point8_y = $point8_y/100
+$point8_z = $point8_z/100
+
+#arancq
+$axis_wrong = -1
+$axis = ""
+@(while)($axis!="x"@(and) $axis!="X"@(and)$axis!="y"@(and)$axis!="Y"@(and)$axis!="z"@(and)$axis!="Z"){
+  $axis_wrong=$axis_wrong+1
+  @(if)($axis_wrong>0){
+    @(message)("Սխալ առանցք")
+  }
+  $axis = @(ask)("Ներմուծեք պտտման առանցքը՝  x, y, z")
+}
+
+@(if)($axis=="x" @(or) $axis=="X"){
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) $rcx_x
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) ($rcy_y*@(cos)($angle))-($rcy_z*@(sin)($angle))
+}
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) ($rcz_y*@(sin)($angle))+($rcz_z*@(cos)($angle))
+  }
+}@(else) @(if)($axis=="y" @(or) $axis=="Y"){
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) ($rcx_x*@(cos)($angle))-($rcx_z*@(sin)($angle))
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) $rcy_y
+  }
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) ($rcz_x*@(sin)($angle))+($rcz_z*@(cos)($angle))
+  }
+}@(else) @(if)($axis=="z" @(or) $axis=="Z"){
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) ($rcx_x*@(cos)($angle))-($rcx_y*@(sin)($angle))
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) ($rcy_x*@(sin)($angle))+($rcy_y*@(cos)($angle))
+}
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) $rcz_z
+  }
+
+}@(else) {
+
+  @(learn) rotation_x  $rcx_x@(,)$rcx_y@(,)$rcx_z{
+    #return $rcx_x
+    @(return) $rcx_x
+  }
+  @(learn) rotation_y  $rcy_x@(,)$rcy_y@(,)$rcy_z{
+    #return $rcy_y
+
+    @(return) $rcy_y
+}
+  @(learn) rotation_z  $rcz_x@(,)$rcz_y@(,)$rcz_z{  
+    #return $rcy_y
+    @(return) $rcz_z
+  }
+}
+
+
+@(while)(@(true)){
+$point1_x_r = rotation_x $point1_x@(,)$point1_y@(,)$point1_z
+$point1_y_r = rotation_y $point1_x@(,)$point1_y@(,)$point1_z
+$point1_z_r = rotation_z $point1_x@(,)$point1_y@(,)$point1_z
+$point1_x_c = convert_x $point1_x_r@(,)$point1_y_r@(,)$point1_z_r
+$point1_y_c = convert_y $point1_x_r@(,)$point1_y_r@(,)$point1_z_r
+
+$point2_x_r = rotation_x $point2_x@(,)$point2_y@(,)$point2_z
+$point2_y_r = rotation_y $point2_x@(,)$point2_y@(,)$point2_z
+$point2_z_r = rotation_z $point2_x@(,)$point2_y@(,)$point2_z
+$point2_x_c = convert_x $point2_x_r@(,)$point2_y_r@(,)$point2_z_r
+$point2_y_c = convert_y $point2_x_r@(,)$point2_y_r@(,)$point2_z_r
+
+$point3_x_r = rotation_x $point3_x@(,)$point3_y@(,)$point3_z
+$point3_y_r = rotation_y $point3_x@(,)$point3_y@(,)$point3_z
+$point3_z_r = rotation_z $point3_x@(,)$point3_y@(,)$point3_z
+$point3_x_c = convert_x $point3_x_r@(,)$point3_y_r@(,)$point3_z_r
+$point3_y_c = convert_y $point3_x_r@(,)$point3_y_r@(,)$point3_z_r
+
+$point4_x_r = rotation_x $point4_x@(,)$point4_y@(,)$point4_z
+$point4_y_r = rotation_y $point4_x@(,)$point4_y@(,)$point4_z
+$point4_z_r = rotation_z $point4_x@(,)$point4_y@(,)$point4_z
+$point4_x_c = convert_x $point4_x_r@(,)$point4_y_r@(,)$point4_z_r
+$point4_y_c = convert_y $point4_x_r@(,)$point4_y_r@(,)$point4_z_r
+
+$point5_x_r = rotation_x $point5_x@(,)$point5_y@(,)$point5_z
+$point5_y_r = rotation_y $point5_x@(,)$point5_y@(,)$point5_z
+$point5_z_r = rotation_z $point5_x@(,)$point5_y@(,)$point5_z
+$point5_x_c = convert_x $point5_x_r@(,)$point5_y_r@(,)$point5_z_r
+$point5_y_c = convert_y $point5_x_r@(,)$point5_y_r@(,)$point5_z_r
+
+$point6_x_r = rotation_x $point6_x@(,)$point6_y@(,)$point6_z
+$point6_y_r = rotation_y $point6_x@(,)$point6_y@(,)$point6_z
+$point6_z_r = rotation_z $point6_x@(,)$point6_y@(,)$point6_z
+$point6_x_c = convert_x $point6_x_r@(,)$point6_y_r@(,)$point6_z_r
+$point6_y_c = convert_y $point6_x_r@(,)$point6_y_r@(,)$point6_z_r
+
+$point7_x_r = rotation_x $point7_x@(,)$point7_y@(,)$point7_z
+$point7_y_r = rotation_y $point7_x@(,)$point7_y@(,)$point7_z
+$point7_z_r = rotation_z $point7_x@(,)$point7_y@(,)$point7_z
+$point7_x_c = convert_x $point7_x_r@(,)$point7_y_r@(,)$point7_z_r
+$point7_y_c = convert_y $point7_x_r@(,)$point7_y_r@(,)$point7_z_r
+
+$point8_x_r = rotation_x $point8_x@(,)$point8_y@(,)$point8_z
+$point8_y_r = rotation_y $point8_x@(,)$point8_y@(,)$point8_z
+$point8_z_r = rotation_z $point8_x@(,)$point8_y@(,)$point8_z
+$point8_x_c = convert_x $point8_x_r@(,)$point8_y_r@(,)$point8_z_r
+$point8_y_c = convert_y $point8_x_r@(,)$point8_y_r@(,)$point8_z_r
+
+
+
+drawLine ($point1_x_c*$width/2+$width/2)@(,)($height/2-$point1_y_c*$width/2)@(,)($point2_x_c*$width/2+$width/2)@(,)($height/2-$point2_y_c*$width/2)
+
+drawLine ($point2_x_c*$width/2+$width/2)@(,)($height/2-$point2_y_c*$width/2)@(,)($point3_x_c*$width/2+$width/2)@(,)($height/2-$point3_y_c*$width/2)
+
+drawLine ($point3_x_c*$width/2+$width/2)@(,)($height/2-$point3_y_c*$width/2)@(,)($point4_x_c*$width/2+$width/2)@(,)($height/2-$point4_y_c*$width/2)
+
+drawLine ($point1_x_c*$width/2+$width/2)@(,)($height/2-$point1_y_c*$width/2)@(,)($point4_x_c*$width/2+$width/2)@(,)($height/2-$point4_y_c*$width/2)
+
+
+drawLine ($point5_x_c*$width/2+$width/2)@(,)($height/2-$point5_y_c*$width/2)@(,)($point6_x_c*$width/2+$width/2)@(,)($height/2-$point6_y_c*$width/2)
+
+drawLine ($point6_x_c*$width/2+$width/2)@(,)($height/2-$point6_y_c*$width/2)@(,)($point7_x_c*$width/2+$width/2)@(,)($height/2-$point7_y_c*$width/2)
+
+drawLine ($point7_x_c*$width/2+$width/2)@(,)($height/2-$point7_y_c*$width/2)@(,)($point8_x_c*$width/2+$width/2)@(,)($height/2-$point8_y_c*$width/2)
+
+drawLine ($point5_x_c*$width/2+$width/2)@(,)($height/2-$point5_y_c*$width/2)@(,)($point8_x_c*$width/2+$width/2)@(,)($height/2-$point8_y_c*$width/2)
+
+
+drawLine ($point5_x_c*$width/2+$width/2)@(,)($height/2-$point5_y_c*$width/2)@(,)($point1_x_c*$width/2+$width/2)@(,)($height/2-$point1_y_c*$width/2)
+
+drawLine ($point6_x_c*$width/2+$width/2)@(,)($height/2-$point6_y_c*$width/2)@(,)($point2_x_c*$width/2+$width/2)@(,)($height/2-$point2_y_c*$width/2)
+
+drawLine ($point7_x_c*$width/2+$width/2)@(,)($height/2-$point7_y_c*$width/2)@(,)($point3_x_c*$width/2+$width/2)@(,)($height/2-$point3_y_c*$width/2)
+
+drawLine ($point8_x_c*$width/2+$width/2)@(,)($height/2-$point8_y_c*$width/2)@(,)($point4_x_c*$width/2+$width/2)@(,)($height/2-$point4_y_c*$width/2)
+
+
+$angle=$angle+1
+$k = $k*(-1)
+@(if)($k==1){
+  @(clear)
+}
+}  
+}
+
