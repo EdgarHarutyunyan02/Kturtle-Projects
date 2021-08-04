@@ -1,0 +1,442 @@
+kturtle-script-v1.0
+#    Program for drawing a kaleidoscope.
+#    Copyright (C) 2021  Edgar Harutyunyan (edgar.harutyunyan.02@gmail.com)
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to the Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+@(clear)
+@(reset)
+
+$canv = 800
+@(canvassize) $canv@(,)$canv
+@(spriteshow)
+@(fontsize) 20
+
+@(learn) getLength $x1@(,)$y1@(,)$x2@(,)$y2 {
+  #Veradarznum e hatvaci erkarutyun@
+  @(return) @(sqrt) ($x1-$x2)*($x1-$x2)+($y1-$y2)*($y1-$y2)
+}
+
+@(learn) getDegree $a1@(,)$b1@(,)$a2@(,)$b2@(,)$a3@(,)$b3{
+  #varadarznum e 2 vektorneri kazmac ankyun@ 
+  $vx1 = $a2-$a1
+  $vy1 = $b2-$b1
+  $vx2 = $a3-$a1
+  $vy2 = $b3-$b1
+  $ankyun = @(arccos)(($vx1*$vx2+$vy1*$vy2)/@(sqrt)(($vx1^2+$vy1^2)*($vx2^2+$vy2^2)))
+  @(return) $ankyun
+}
+
+# havasarumnei hamakargi lucman krameri funkcia
+@(learn) kramer_x $kx_a1@(,)$kx_b1@(,)$kx_c1@(,)$kx_a2@(,)$kx_b2@(,)$kx_c2 {
+  @(return) ($kx_b2*$kx_c1-$kx_b1*$kx_c2)/($kx_a1*$kx_b2-$kx_a2*$kx_b1)
+}
+
+@(learn) kramer_y $ky_a1@(,)$ky_b1@(,)$ky_c1@(,)$ky_a2@(,)$ky_b2@(,)$ky_c2 {
+  @(return) ($ky_a1*$ky_c2-$ky_a2*$ky_c1)/($ky_a1*$ky_b2-$ky_a2*$ky_b1)
+}
+
+@(learn) eq_of_line_k $eq_x1@(,)$eq_y1@(,)$eq_x2@(,)$eq_y2 {
+  # veradarznum e 2 keterov ancnox uxxi havasarman K gorcakci ankyunayin chap@
+  @(if) ($eq_x1!=$eq_x2) {
+    $eq_degree = @(arctan)(kramer_x $eq_x1@(,)1@(,)$eq_y1@(,)$eq_x2@(,)1@(,)$eq_y2)
+  }@(else) {
+    @(if)($eq_y1<$eq_y2){
+      $eq_degree = 90
+    }@(else){
+      $eq_degree = -90
+    }
+  }
+  @(return) $eq_degree
+}
+
+@(learn) eq_of_line_b $eq_x1@(,)$eq_y1@(,)$eq_x2@(,)$eq_y2 {
+  # veradarznum e ayd 2 keterov ancnox uxxi havasarman B gorcakic@
+  @(if) ($eq_x1!=$eq_x2) {
+    $b_gorcakic = kramer_y $eq_x1@(,)1@(,)$eq_y1@(,)$eq_x2@(,)1@(,)$eq_y2
+    @(return) $b_gorcakic
+  }@(else){
+    @(return) "infinite"
+  }
+}
+
+@(learn) KUTUHK_ankyun $_K_x1@(,) $_K_y1@(,) $_K_x2@(,) $_K_y2@(,) $_K_x3@(,) $_K_y3 {
+  # ketic uxxin tarvats uxxahayatsi ankyun@
+  $check = eq_of_line_k $_K_x2@(,) $_K_y2@(,) $_K_x3@(,) $_K_y3
+  @(if) ($check!=0 ) {
+    @(if) $check!=90 {
+      @(return) @(arctan)((-1)/(@(tan)($check)))
+    }
+  }
+  @(if) $check==0 {
+    @(return) 90
+  }
+  @(if) $check==90 {
+    @(return) 0
+  }
+}
+
+@(learn) KUTUHK_b $_b_x1@(,)$_b_y1@(,)$_b_x2@(,)$_b_y2@(,)$_b_x3@(,)$_b_y3 {
+  # ketic uxxin tarvats uxxahayatsi & myus uxxi hatman koordinatner@
+  $ch_K = KUTUHK_ankyun $_b_x1@(,)$_b_y1@(,)$_b_x2@(,)$_b_y2@(,)$_b_x3@(,)$_b_y3
+  @(if) $ch_K !=90 {
+    @(return) $_b_y1-(@(tan)($ch_K ))*$_b_x1
+  }@(else){
+    @(return) "infinite"
+  }
+}
+
+@(learn) height_across_coords_x $_ac_x1@(,)$_ac_y1@(,)$_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3 {
+  # veradarznum e uxxahayatsi ev uxxi het hatman koordinatneri x-@
+  $ac_a1 = (-1)*(@(tan)(eq_of_line_k $_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3))
+  $ac_b1 = 1
+  $ac_c1 = eq_of_line_b $_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3
+  $ac_a2 = (-1)*@(tan)(KUTUHK_ankyun $_ac_x1@(,)$_ac_y1@(,)$_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3)
+  $ac_b2 = 1
+  $ac_c2 = KUTUHK_b $_ac_x1@(,)$_ac_y1@(,)$_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3
+
+  $check_ac = eq_of_line_k $_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3
+  @(if) ($check_ac!=0){
+    @(if) ($check_ac!=90 @(and) $check_ac!=-90){
+      @(return) kramer_x $ac_a1@(,)$ac_b1@(,)$ac_c1@(,)$ac_a2@(,)$ac_b2@(,)$ac_c2
+    }
+  }
+  @(if)($check_ac == 0){
+    @(return) $_ac_x1
+  }
+  @(if)($check_ac == 90 @(or) $check_ac == -90) {
+    @(return) $_ac_x2
+  }
+}
+
+@(learn) height_across_coords_y $_ac_x1@(,)$_ac_y1@(,)$_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3 {
+  # veradarznum e uxxahayatsi ev uxxi het hatman koordinatneri y-@
+  $ac_y_a1 = (-1)*(@(tan)(eq_of_line_k $_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3))
+  $ac_y_b1 = 1
+  $ac_y_c1 = eq_of_line_b $_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3
+  $ac_y_a2 = (-1)*@(tan)(KUTUHK_ankyun $_ac_x1@(,)$_ac_y1@(,)$_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3)
+  $ac_y_b2 = 1
+  $ac_y_c2 = KUTUHK_b $_ac_x1@(,)$_ac_y1@(,)$_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3
+
+  $check_y_ac = eq_of_line_k $_ac_x2@(,)$_ac_y2@(,)$_ac_x3@(,)$_ac_y3
+  @(if) ($check_y_ac!=0){
+    @(if) ($check_y_ac!=90 @(and) $check_y_ac!=-90){
+      @(return) kramer_y $ac_y_a1@(,)$ac_y_b1@(,)$ac_y_c1@(,)$ac_y_a2@(,)$ac_y_b2@(,)$ac_y_c2
+    }
+  }
+  @(if)($check_y_ac == 0){
+    @(return) $_ac_y2
+  }
+  @(if)($check_y_ac == 90 @(or) $check_y_ac == -90){
+    @(return) $_ac_y1
+  }
+}
+
+@(learn) drawLine $_dr_x1@(,)$_dr_y1@(,)$_dr_x2@(,)$_dr_y2@(,)$_lineType{
+  # gcum e hatvats 
+  @(pendown)
+  @(go) $_dr_x1@(,)$_dr_y1
+  $length = getLength $_dr_x1@(,)$_dr_y1@(,)$_dr_x2@(,)$_dr_y2
+  $degree = eq_of_line_k $_dr_x1@(,)$_dr_y1@(,)$_dr_x2@(,)$_dr_y2
+  @(if) ($_dr_x1>$_dr_x2){
+    @(direction)  $degree-90
+  }@(else){
+    @(direction)  $degree+90
+  }
+  @(if) $_lineType == "solid" {
+    @(pendown)
+    @(fw) $length
+  }@(else) @(if) $_lineType=="dashed"{
+    @(repeat) @(round)($length/10) {
+      @(pendown)
+      @(fw) 5
+      @(penup)
+      @(fw) 5
+    }
+  }@(else) @(if) $_lineType=="transparent"{
+    @(penup)
+    @(fw) $length
+  }
+  @(pendown)
+}
+
+@(learn) get_mirrored_point_x $mr_point_x@(,)$mr_point_y@(,) $line_A_x@(,)$line_A_y@(,)$line_B_x@(,) $line_B_y  {
+  #veradarznum e trvac keti artapatkervac keti x@ AB keterov ancnox hayelu mej.
+  $M_p_x = height_across_coords_x $mr_point_x@(,) $mr_point_y@(,) $line_A_x@(,)$line_A_y@(,)$line_B_x@(,)$line_B_y
+  @(return) 2*$M_p_x-$mr_point_x
+}
+
+@(learn) get_mirrored_point_y $mr_point_x@(,)$mr_point_y@(,) $line_A_x@(,)$line_A_y@(,)$line_B_x@(,) $line_B_y  {
+  #veradarznum e trvac keti artapatkervac keti y@ AB keterov ancnox hayelu mej.
+  $M_p_y = height_across_coords_y $mr_point_x@(,) $mr_point_y@(,) $line_A_x@(,)$line_A_y@(,)$line_B_x@(,)$line_B_y
+  @(return) 2*$M_p_y-$mr_point_y
+}
+
+
+
+# erankyann artagcac shrjanagci sharavix@
+$radius = 100
+
+
+$Ax = -1*$radius*(@(cos) 30)
+$Ay = -1*$radius*(@(sin) 30)
+$Bx = 0
+$By = $radius
+$Cx = $radius*(@(cos) 30)
+$Cy = -1*$radius*(@(sin) 30)
+
+
+drawLine $canv/2+$Ax@(,)($canv/2)-$Ay@(,)$canv/2+$Bx@(,)$canv/2-$By@(,) "solid"
+
+drawLine $canv/2+$Cx@(,)($canv/2)-$Cy@(,)$canv/2+$Bx@(,)$canv/2-$By@(,) "solid"
+
+drawLine $canv/2+$Ax@(,)($canv/2)-$Ay@(,)$canv/2+$Cx@(,)$canv/2-$Cy@(,) "solid"
+
+$a_k = eq_of_line_k $Ax@(,)$Ay@(,)$Bx@(,)$By
+$a_b = eq_of_line_b $Ax@(,)$Ay@(,)$Bx@(,)$By
+
+
+$b_k = eq_of_line_k $Bx@(,)$By@(,)$Cx@(,)$Cy
+$b_b = eq_of_line_b $Bx@(,)$By@(,)$Cx@(,)$Cy
+
+
+$c_k = eq_of_line_k $Ax@(,)$Ay@(,)$Cx@(,)$Cy
+$c_b = eq_of_line_b $Ax@(,)$Ay@(,)$Cx@(,)$Cy
+
+
+#functions for mirrors
+
+#      /\
+#     /  \
+#  a /  * \ b
+#   /      \ 
+#   --------
+#       c
+
+@(learn) is_mirror_a $ma_x@(,) $ma_y@(,) $ma_offset {
+  # Stugum e ardyoq a uxix@ trvac keti hamar heyeli e, te voch.
+  $offset = $ma_offset/@(cos) $a_k
+  @(return) ((@(tan) $a_k)*$ma_x+$a_b-$offset)>$ma_y
+}
+
+@(learn) is_mirror_b $mb_x@(,) $mb_y@(,) $mb_offset {
+  # Stugum e ardyoq b uxix@ trvac keti hamar heyeli e, te voch.
+  $offset = $mb_offset/@(cos) $b_k
+  @(return) ((@(tan) $b_k)*$mb_x+$b_b-$offset )>$mb_y
+}
+
+@(learn) is_mirror_c $mc_x@(,) $mc_y@(,)$mc_offset {
+  # Stugum e ardyoq c uxix@ trvac keti hamar heyeli e, te voch.
+  $offset = $mc_offset/@(cos) $c_k
+  @(return) ((@(tan) $c_k)*$mc_x+$c_b+$offset)<$mc_y
+}
+
+
+@(learn) draw_point $point_x@(,)$point_y@(,) $direction@(,) $type@(,) $width @(,)$inner_width@(,)$red@(,)$green@(,)$blue{
+  # gcum e 3 tesaki patkerneric mek@, 
+  @(penwidth) $width
+  @(direction) 90-$direction
+  @(go) $point_x@(,)$point_y
+  @(pencolor) $red@(,)$green@(,)$blue
+  @(if)($type==1){
+    @(fw) 0.01
+    @(penwidth) $inner_width
+    @(pencolor) 255@(,)255@(,)255
+    @(fw) 0.01
+  }@(else) @(if)($type==2){
+    @(fw) 0.01
+    @(tl) 45
+    @(fw) 0.01      
+    @(penwidth) $inner_width
+    @(pencolor) 255@(,)255@(,)255
+    @(tl) 45
+    @(fw) 0.01
+    @(tl) 45
+    @(fw) 0.01
+  }@(else) @(if)($type==3){
+    @(repeat) 3{
+      @(fw) 0.01
+       @(tl) 30
+    }
+    @(penwidth) $inner_width
+    @(pencolor) 255@(,)255@(,)255
+    @(repeat) 3{
+      @(fw) 0.01
+       @(tl) 30
+    }
+  }
+  @(pencolor) 0@(,)0@(,)0
+}
+
+@(learn) in_triangle_with_offset $it_x@(,)$it_y@(,) $it_offset{
+  @(return) (is_mirror_a $it_x@(,)$it_y@(,) $it_offset) @(and) (is_mirror_b $it_x@(,) $it_y@(,) $it_offset) @(and) (is_mirror_c $it_x@(,)$it_y@(,) $it_offset) 
+}
+
+
+@(learn) draw_pattern $dp_x@(,)$dp_y@(,)$dir@(,)$type@(,) $width @(,)$inner_width@(,) $red@(,)$green@(,)$blue{
+  #
+  @(if)($dp_x>=-1*$canv/2 @(and) $dp_x<=$canv/2 @(and) $dp_y>=-1*$canv/2 @(and) $dp_y<=$canv/2){
+    @(pencolor) $red@(,)$green@(,) $blue
+    draw_point $canv/2+$dp_x@(,) $canv/2-$dp_y@(,)$dir@(,)$type@(,)$width @(,)$inner_width@(,)$red@(,)$green@(,)$blue
+    @(if) is_mirror_a $dp_x@(,)$dp_y@(,)0{
+      $mirrored_x = get_mirrored_point_x $dp_x@(,)$dp_y@(,) $Ax@(,)$Ay@(,)$Bx@(,)$By
+      $mirrored_y = get_mirrored_point_y $dp_x@(,)$dp_y@(,) $Ax@(,)$Ay@(,)$Bx@(,)$By
+      $mirrored_dir = 2*(eq_of_line_k $Ax@(,)$Ay@(,)$Bx@(,)$By)-$dir
+      draw_pattern $mirrored_x@(,)$mirrored_y@(,) $mirrored_dir @(,)$type@(,) $width @(,)$inner_width@(,) $red@(,) $green@(,) $blue
+    }
+    @(if) is_mirror_b $dp_x@(,)$dp_y@(,)0{
+      $mirrored_x = get_mirrored_point_x $dp_x@(,)$dp_y@(,) $Bx@(,)$By@(,)$Cx@(,)$Cy
+      $mirrored_y = get_mirrored_point_y $dp_x@(,)$dp_y@(,) $Bx@(,)$By@(,)$Cx@(,)$Cy
+      $mirrored_dir = 2*(eq_of_line_k $Bx@(,)$By@(,)$Cx@(,)$Cy)-$dir
+      draw_pattern $mirrored_x@(,)$mirrored_y@(,) $mirrored_dir @(,)$type@(,) $width @(,)$inner_width@(,) $red@(,) $green@(,) $blue
+    }
+    @(if) is_mirror_c $dp_x@(,)$dp_y@(,)0{
+      $mirrored_x = get_mirrored_point_x $dp_x@(,)$dp_y@(,) $Ax@(,)$Ay@(,)$Cx@(,)$Cy
+      $mirrored_y = get_mirrored_point_y $dp_x@(,)$dp_y@(,) $Ax@(,)$Ay@(,)$Cx@(,)$Cy
+      $mirrored_dir = 2*(eq_of_line_k $Ax@(,)$Ay@(,)$Cx@(,)$Cy)-$dir
+      draw_pattern $mirrored_x@(,)$mirrored_y@(,) $mirrored_dir @(,)$type@(,) $width @(,)$inner_width@(,) $red@(,) $green@(,) $blue
+    }
+  }
+}
+
+@(learn) draw_triangle $dt_1_x@(,)$dt_1_y@(,)$dt_2_x@(,)$dt_2_y@(,) $dt_3_x@(,)$dt_3_y  {
+  @(pencolor) 255@(,)0@(,)0
+  drawLine $dt_1_x@(,)$dt_1_y@(,)$dt_2_x@(,)$dt_2_y@(,) "solid"
+  @(pencolor) 0@(,)255@(,)0
+  drawLine $dt_1_x@(,)$dt_1_y@(,) $dt_3_x@(,)$dt_3_y@(,) "solid"
+  @(pencolor) 0@(,)0@(,)255
+  drawLine $dt_2_x@(,)$dt_2_y@(,) $dt_3_x@(,)$dt_3_y@(,) "solid"
+}
+
+@(learn) draw_triangle_pattern $dp_1_x@(,)$dp_1_y@(,)$dp_2_x@(,)$dp_2_y@(,) $dp_3_x@(,)$dp_3_y  {
+  @(penwidth) 5
+  @(if)($dp_1_x>=-1*$canv/2 @(and) $dp_1_x<=$canv/2 @(and) $dp_1_y>=-1*$canv/2 @(and) $dp_1_y<=$canv/2){
+    @(if)($dp_2_x>=-1*$canv/2 @(and) $dp_2_x<=$canv/2 @(and) $dp_2_y>=-1*$canv/2 @(and) $dp_2_y<=$canv/2){
+      @(if)($dp_3_x>=-1*$canv/2 @(and) $dp_3_x<=$canv/2 @(and) $dp_3_y>=-1*$canv/2 @(and) $dp_3_y<=$canv/2){
+        draw_triangle $canv/2+$dp_1_x@(,)$canv/2-$dp_1_y@(,)$canv/2+$dp_2_x@(,)$canv/2-$dp_2_y@(,) $canv/2+$dp_3_x@(,)$canv/2-$dp_3_y
+
+        @(if) (is_mirror_a $dp_1_x@(,)$dp_1_y@(,)0) @(and) (is_mirror_a $dp_2_x@(,)$dp_2_y@(,)0) @(and) (is_mirror_a $dp_3_x@(,)$dp_3_y@(,)0){
+          $mirrored_1_x = get_mirrored_point_x $dp_1_x@(,)$dp_1_y@(,) $Ax@(,)$Ay@(,)$Bx@(,)$By
+          $mirrored_1_y = get_mirrored_point_y $dp_1_x@(,)$dp_1_y@(,) $Ax@(,)$Ay@(,)$Bx@(,)$By
+
+          $mirrored_2_x = get_mirrored_point_x $dp_2_x@(,)$dp_2_y@(,) $Ax@(,)$Ay@(,)$Bx@(,)$By
+          $mirrored_2_y = get_mirrored_point_y $dp_2_x@(,)$dp_2_y@(,) $Ax@(,)$Ay@(,)$Bx@(,)$By
+
+          $mirrored_3_x = get_mirrored_point_x $dp_3_x@(,)$dp_3_y@(,) $Ax@(,)$Ay@(,)$Bx@(,)$By
+          $mirrored_3_y = get_mirrored_point_y $dp_3_x@(,)$dp_3_y@(,) $Ax@(,)$Ay@(,)$Bx@(,)$By
+          
+          draw_triangle_pattern $mirrored_1_x@(,)$mirrored_1_y@(,) $mirrored_2_x@(,)$mirrored_2_y@(,) $mirrored_3_x@(,)$mirrored_3_y
+        }
+
+        @(if) (is_mirror_b $dp_1_x@(,)$dp_1_y@(,)0) @(and) (is_mirror_b $dp_2_x@(,)$dp_2_y@(,)0) @(and) (is_mirror_b $dp_3_x@(,)$dp_3_y@(,)0){
+          $mirrored_1_x = get_mirrored_point_x $dp_1_x@(,)$dp_1_y@(,) $Bx@(,)$By@(,)$Cx@(,)$Cy
+          $mirrored_1_y = get_mirrored_point_y $dp_1_x@(,)$dp_1_y@(,) $Bx@(,)$By@(,)$Cx@(,)$Cy
+
+          $mirrored_2_x = get_mirrored_point_x $dp_2_x@(,)$dp_2_y@(,) $Bx@(,)$By@(,)$Cx@(,)$Cy
+          $mirrored_2_y = get_mirrored_point_y $dp_2_x@(,)$dp_2_y@(,) $Bx@(,)$By@(,)$Cx@(,)$Cy
+
+          $mirrored_3_x = get_mirrored_point_x $dp_3_x@(,)$dp_3_y@(,) $Bx@(,)$By@(,)$Cx@(,)$Cy
+          $mirrored_3_y = get_mirrored_point_y $dp_3_x@(,)$dp_3_y@(,) $Bx@(,)$By@(,)$Cx@(,)$Cy
+          
+          draw_triangle_pattern $mirrored_1_x@(,)$mirrored_1_y@(,) $mirrored_2_x@(,)$mirrored_2_y@(,) $mirrored_3_x@(,)$mirrored_3_y
+        }
+
+        @(if) (is_mirror_c $dp_1_x@(,)$dp_1_y@(,)0) @(and) (is_mirror_c $dp_2_x@(,)$dp_2_y@(,)0) @(and) (is_mirror_c $dp_3_x@(,)$dp_3_y@(,)0){
+          $mirrored_1_x = get_mirrored_point_x $dp_1_x@(,)$dp_1_y@(,) $Ax@(,)$Ay@(,)$Cx@(,)$Cy
+          $mirrored_1_y = get_mirrored_point_y $dp_1_x@(,)$dp_1_y@(,) $Ax@(,)$Ay@(,)$Cx@(,)$Cy
+
+          $mirrored_2_x = get_mirrored_point_x $dp_2_x@(,)$dp_2_y@(,) $Ax@(,)$Ay@(,)$Cx@(,)$Cy
+          $mirrored_2_y = get_mirrored_point_y $dp_2_x@(,)$dp_2_y@(,) $Ax@(,)$Ay@(,)$Cx@(,)$Cy
+
+          $mirrored_3_x = get_mirrored_point_x $dp_3_x@(,)$dp_3_y@(,) $Ax@(,)$Ay@(,)$Cx@(,)$Cy
+          $mirrored_3_y = get_mirrored_point_y $dp_3_x@(,)$dp_3_y@(,) $Ax@(,)$Ay@(,)$Cx@(,)$Cy
+          
+          draw_triangle_pattern $mirrored_1_x@(,)$mirrored_1_y@(,) $mirrored_2_x@(,)$mirrored_2_y@(,) $mirrored_3_x@(,)$mirrored_3_y
+        }
+      }
+    }
+  }
+}
+
+
+
+
+
+
+@(spritehide)
+@(message) "Ծրագիրը նկարում է պատահական պատկերներ, նմանակելով գեղադիտակ (կալեյդոսկոպ) սարքին։"
+
+@(while) @(true) {
+  $type_of_picture = @(ask) "Ի՞նչ պատկեր եք ցանկանում եռանկյան ներսում․ 1) Զարդանման պատկերներ, 2) Եռանկյուններ։"
+  @(if) $type_of_picture == 1 {
+    $program_mode = "RANDOM_POINTS"
+    @(break)
+  }
+  @(if) $type_of_picture == 2 {
+    $program_mode = "TRIANGLES"
+    @(break)
+  }
+  @(if) $type_of_picture == "x" {
+    @(exit)
+  }
+}
+
+@(if)($program_mode == "RANDOM_POINTS"){
+  # Erankyan nersum patahakanutyan skzbunqov @ntrum e ket' koxmeric pahpanelov voroshaki heravorutyun, ev karucum e dra bolor artapatkerumner@.
+  $num = 100
+  $offset_dist = 15
+  @(spritehide)
+  @(repeat) $num{
+    @(while)(@(true)){
+      $rand_x = @(random) -1*$radius@(,)$radius
+      $rand_y = @(random) -1*$radius@(,)$radius
+      @(if) in_triangle_with_offset $rand_x@(,)$rand_y@(,) $offset_dist { @(break)}
+    }
+    draw_pattern $rand_x@(,)$rand_y@(,)(@(random) -90@(,)90)@(,)(@(round) (@(random) 1@(,)3))@(,) (@(random) 15@(,)25)@(,)(@(random) 0@(,)10)@(,)(@(random) 0@(,)255)@(,)(@(random) 0@(,)255)@(,)(@(random) 0@(,)255)
+  }
+}@(else) @(if)($program_mode == "TRIANGLES"){
+  $distance = 20
+  @(repeat) 15{
+    #erankyan mej @ntrum e shrjanagci kentron
+    @(while)(@(true)){
+      $rand_x_0 = @(random) -1*$radius@(,)$radius
+      $rand_y_0 = @(random) -1*$radius@(,)$radius
+      @(if) in_triangle_with_offset $rand_x_0@(,)$rand_y_0@(,) $distance+1 {@(break)}
+    }
+    
+    #karucum e erankyun, gagatner@ kentronic unen patahakan heravorutyun.
+    @(go) $canv/2+$rand_x_0@(,) $canv/2-$rand_y_0
+    @(dir) @(random) 0@(,)180
+    @(penup) 
+    @(fw) $distance
+    $rand_x_1 = @(getx)-$canv/2
+    $rand_y_1 = $canv/2-@(gety)
+    @(backward) $distance
+
+    @(tl) 120
+    @(fw) $distance
+    $rand_x_2 = @(getx)-$canv/2
+    $rand_y_2 = $canv/2-@(gety)
+    @(backward) $distance
+
+    @(tl) 120
+    @(fw) $distance
+    $rand_x_3 = @(getx)-$canv/2
+    $rand_y_3 = $canv/2-@(gety)
+    @(backward) $distance
+
+    draw_triangle_pattern $rand_x_1@(,)$rand_y_1@(,)$rand_x_2@(,)$rand_y_2@(,)$rand_x_3@(,)$rand_y_3
+  }
+}
